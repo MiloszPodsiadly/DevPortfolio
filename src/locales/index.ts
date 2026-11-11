@@ -9,6 +9,7 @@ export interface PageContent {
   name: string;
   role: 'Junior Software Developer';
   introduction: string;
+  portraitAlt: string;
   skipLink: string;
   primaryNavigation: string;
   projectsLabel: string;
@@ -47,6 +48,7 @@ export const pageContent: Record<Locale, PageContent> = {
     role: 'Junior Software Developer',
     introduction:
       'A personal portfolio in progress, built to share a little about my work and interests.',
+    portraitAlt: 'Portrait of Miłosz Podsiadły',
     skipLink: 'Skip to main content',
     primaryNavigation: 'Main navigation',
     projectsLabel: 'Projects',
@@ -83,6 +85,7 @@ export const pageContent: Record<Locale, PageContent> = {
     name: 'Miłosz Podsiadły',
     role: 'Junior Software Developer',
     introduction: 'Portfolio w budowie, w którym opowiem o swojej pracy i zainteresowaniach.',
+    portraitAlt: 'Portret Miłosza Podsiadłego',
     skipLink: 'Przejdź do treści',
     primaryNavigation: 'Nawigacja główna',
     projectsLabel: 'Projekty',

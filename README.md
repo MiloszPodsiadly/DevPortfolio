@@ -2,7 +2,7 @@
 
 A small, static-first portfolio for **Junior Software Developer**. It prerenders English and Polish HTML at build time, then hydrates the same React tree in the browser. PF-002 adds the blue/violet visual identity, responsive hero and navigation, and reusable visual components. Verified project content and profile details belong to PF-003; final SEO belongs to PF-004.
 
-The hero currently uses decorative SVG artwork. The owner-approved portrait is still blocked pending a separate clean asset with a light shirt and no pink hair glow; see [portrait asset contract](docs/portrait-asset-contract.md).
+The hero uses an owner-supplied portrait when the optimized WebP exports are present and falls back to the decorative SVG scene when they are absent. The original stays in the ignored `assets-source/portraits/` directory; only the 480 px and 960 px WebP exports are included in the public build. See the [portrait asset contract](docs/portrait-asset-contract.md) for the local export and visual review steps.
 
 ## Requirements
 

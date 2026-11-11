@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/build.mjs",
+    "export:portrait": "node scripts/export-portrait.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "lint": "eslint .",
     "format:check": "prettier --check .",

@@ -4,9 +4,10 @@ import { SceneArt } from './scene/SceneArt';
 
 interface AppProps {
   locale: Locale;
+  portraitAvailable?: boolean;
 }
 
-export function App({ locale }: AppProps) {
+export function App({ locale, portraitAvailable = false }: AppProps) {
   const content = getPageContent(locale);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -133,8 +134,24 @@ export function App({ locale }: AppProps) {
               </a>
             </div>
           </div>
-          <div className="hero-visual" aria-hidden="true">
+          <div className="hero-visual">
             <SceneArt />
+            {portraitAvailable && (
+              <img
+                className="hero-portrait"
+                src="/assets/portraits/hero-960.webp"
+                srcSet="/assets/portraits/hero-480.webp 480w, /assets/portraits/hero-960.webp 960w"
+                sizes="(max-width: 640px) calc(100vw - 2rem), (max-width: 820px) 42vw, 38vw"
+                alt={content.portraitAlt}
+                width={960}
+                height={1200}
+                fetchPriority="high"
+                decoding="async"
+                onError={(event) => {
+                  event.currentTarget.hidden = true;
+                }}
+              />
+            )}
           </div>
         </section>
 

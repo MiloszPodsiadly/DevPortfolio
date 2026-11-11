@@ -66,6 +66,13 @@ export async function verifyOutput({
   const filePaths = new Set(
     files.map((file) => relative(resolvedDist, file).replaceAll('\\', '/')),
   );
+  const portraitExports = ['assets/portraits/hero-480.webp', 'assets/portraits/hero-960.webp'];
+  const portraitExportStates = portraitExports.map((path) => filePaths.has(path));
+  assert.ok(
+    portraitExportStates.every((exists) => exists === portraitExportStates[0]),
+    'The build must include both portrait exports or neither one.',
+  );
+  const portraitAvailable = portraitExportStates.every(Boolean);
   for (const required of ['en/index.html', 'pl/index.html', '404.html', '_redirects']) {
     assert.ok(filePaths.has(required), `Missing dist/${required}.`);
   }
@@ -79,6 +86,12 @@ export async function verifyOutput({
   assert.ok(
     ![...filePaths].some((path) => path.startsWith('.env')),
     'An environment file leaked into dist/.',
+  );
+  assert.ok(
+    ![...filePaths].some(
+      (path) => path.startsWith('assets-source/') || /hero-source\.(png|jpe?g|webp)$/i.test(path),
+    ),
+    'The private portrait source leaked into dist/.',
   );
 
   const redirects = await readFile(join(resolvedDist, '_redirects'), 'utf8');
@@ -123,6 +136,32 @@ export async function verifyOutput({
       placeholderPattern,
       `${filename} contains a placeholder production domain.`,
     );
+    assert.ok(
+      html.includes(`data-portrait-available="${portraitAvailable}"`),
+      `${filename} has a portrait availability flag inconsistent with the built assets.`,
+    );
+    if (portraitAvailable) {
+      assert.ok(
+        attributeValues(html, 'src').includes('/assets/portraits/hero-960.webp'),
+        `${filename} is missing the high-resolution portrait source.`,
+      );
+      assert.ok(
+        attributeValues(html, 'srcset').some((value) =>
+          value.includes('/assets/portraits/hero-480.webp 480w'),
+        ),
+        `${filename} is missing the responsive portrait source set.`,
+      );
+      assert.ok(
+        attributeValues(html, 'alt').some((value) => value.trim().length > 0),
+        `${filename} portrait must have localized alternative text.`,
+      );
+    } else {
+      assert.doesNotMatch(
+        html,
+        /class=["']hero-portrait["']/i,
+        `${filename} should use the scene fallback.`,
+      );
+    }
     checkLinks(html, filename, filePaths);
 
     const scriptSources = attributeValues(html, 'src');

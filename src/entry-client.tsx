@@ -13,10 +13,11 @@ const prerenderedLocale = container.dataset.locale;
 const locale: Locale = isLocale(prerenderedLocale)
   ? prerenderedLocale
   : localeFromPath(window.location.pathname);
+const portraitAvailable = container.dataset.portraitAvailable === 'true';
 
 document.documentElement.lang = locale;
 document.documentElement.classList.add('js');
-const app = <App locale={locale} />;
+const app = <App locale={locale} portraitAvailable={portraitAvailable} />;
 
 if (container.hasChildNodes()) {
   hydrateRoot(container, app, {

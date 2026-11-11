@@ -267,12 +267,31 @@ button {
 .hero-visual {
   position: relative;
   width: 100%;
+  max-width: 32rem;
   min-width: 0;
-  aspect-ratio: 640 / 520;
+  justify-self: end;
+  aspect-ratio: 5 / 4;
+  isolation: isolate;
+}
+
+.hero-visual::before {
+  position: absolute;
+  z-index: -1;
+  inset: 10% 12%;
+  border: 1px solid var(--color-border-night);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    color-mix(in srgb, var(--color-electric-blue) 16%, transparent),
+    color-mix(in srgb, var(--color-nebula-violet) 12%, transparent) 46%,
+    transparent 76%
+  );
+  content: '';
 }
 
 .hero-scene {
   position: absolute;
+  z-index: 0;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -280,6 +299,19 @@ button {
   pointer-events: none;
   -webkit-mask-image: radial-gradient(ellipse at 60% 48%, #000 40%, transparent 86%);
   mask-image: radial-gradient(ellipse at 60% 48%, #000 40%, transparent 86%);
+}
+
+.hero-portrait {
+  position: absolute;
+  z-index: 1;
+  inset: 4% 11% 0;
+  width: 78%;
+  height: 94%;
+  border: 1px solid color-mix(in srgb, var(--color-ice-blue) 36%, transparent);
+  border-radius: 48% 48% 1.25rem 1.25rem;
+  box-shadow: 0 1.5rem 4rem color-mix(in srgb, var(--color-electric-blue) 16%, transparent);
+  object-fit: cover;
+  object-position: center;
 }
 
 .hero-scene svg {
@@ -635,7 +667,7 @@ h2 {
   .hero-visual {
     width: min(100%, 26rem);
     margin-inline: auto;
-    aspect-ratio: 640 / 440;
+    aspect-ratio: 4 / 5;
   }
 
   .hero-scene {

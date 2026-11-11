@@ -1,7 +1,7 @@
 export function SceneArt() {
   return (
     <div className="hero-scene" aria-hidden="true">
-      <svg viewBox="0 0 640 520" preserveAspectRatio="xMidYMid meet" focusable="false">
+      <svg viewBox="0 0 640 520" preserveAspectRatio="xMidYMid slice" focusable="false">
         <defs>
           <radialGradient id="moon-fill" cx="35%" cy="30%" r="75%">
             <stop offset="0%" stopColor="var(--color-text-primary)" />

@@ -49,6 +49,7 @@ export function validateLocaleContent(content: Record<string, unknown>): string[
       'name',
       'role',
       'introduction',
+      'portraitAlt',
       'skipLink',
       'primaryNavigation',
       'projectsLabel',

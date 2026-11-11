@@ -6,12 +6,17 @@ import { verifyOutput } from './verify-output.mjs';
 
 let fixtureDirectory;
 
-async function writeValidFixture(directory, siteOrigin) {
+async function writeValidFixture(directory, siteOrigin, portraitAvailable = false) {
   await mkdir(join(directory, 'en'), { recursive: true });
   await mkdir(join(directory, 'pl'), { recursive: true });
   await mkdir(join(directory, 'assets'), { recursive: true });
   await writeFile(join(directory, 'assets', 'client-abcdef12.js'), '');
   await writeFile(join(directory, 'assets', 'site-abcdef12.css'), '');
+  if (portraitAvailable) {
+    await mkdir(join(directory, 'assets', 'portraits'), { recursive: true });
+    await writeFile(join(directory, 'assets', 'portraits', 'hero-480.webp'), '480');
+    await writeFile(join(directory, 'assets', 'portraits', 'hero-960.webp'), '960');
+  }
   await writeFile(join(directory, '_redirects'), '/ /en/ 302\n');
   await writeFile(
     join(directory, '404.html'),
@@ -33,7 +38,10 @@ async function writeValidFixture(directory, siteOrigin) {
       locale === 'en'
         ? 'An English introduction with enough meaningful content to satisfy the static output contract.'
         : 'Polskie wprowadzenie z wystarczającą treścią, aby spełnić kontrakt statycznego HTML.';
-    const html = `<html lang="${locale}"><head><title>Junior Software Developer</title><meta name="description" content="Portfolio introduction"><link rel="stylesheet" href="/assets/site-abcdef12.css">${seo}<script type="module" src="/assets/client-abcdef12.js"></script></head><body><a href="#main-content">Skip</a><nav><a href="/en/">English</a><a href="/pl/">Polski</a></nav><main id="main-content"><h1>Junior Software Developer</h1><p>${introduction}</p></main></body></html>`;
+    const portrait = portraitAvailable
+      ? '<img class="hero-portrait" src="/assets/portraits/hero-960.webp" srcset="/assets/portraits/hero-480.webp 480w, /assets/portraits/hero-960.webp 960w" alt="Portrait">'
+      : '';
+    const html = `<html lang="${locale}"><head><title>Junior Software Developer</title><meta name="description" content="Portfolio introduction"><link rel="stylesheet" href="/assets/site-abcdef12.css">${seo}<script type="module" src="/assets/client-abcdef12.js"></script></head><body><div id="root" data-portrait-available="${portraitAvailable}">${portrait}<a href="#main-content">Skip</a><nav><a href="/en/">English</a><a href="/pl/">Polski</a></nav><main id="main-content"><h1>Junior Software Developer</h1><p>${introduction}</p></main></div></body></html>`;
     await writeFile(join(directory, locale, 'index.html'), html);
   }
 }
@@ -80,5 +88,14 @@ describe('built output verification', () => {
     await expect(
       verifyOutput({ distDirectory: fixtureDirectory, siteUrl: 'https://portfolio.dev' }),
     ).resolves.toMatchObject({ files: 6 });
+  });
+
+  it('accepts both optimized portrait exports when the prerendered page enables the portrait', async () => {
+    fixtureDirectory = await mkdtemp(join(tmpdir(), 'portfolio-output-fixture-'));
+    await writeValidFixture(fixtureDirectory, undefined, true);
+
+    await expect(verifyOutput({ distDirectory: fixtureDirectory })).resolves.toMatchObject({
+      files: 8,
+    });
   });
 });

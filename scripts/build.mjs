@@ -1,4 +1,4 @@
-import { readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { access, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build as viteBuild } from 'vite';
@@ -7,6 +7,25 @@ const root = resolve(import.meta.dirname, '..');
 const distDirectory = join(root, 'dist');
 const clientEntry = join(root, 'src', 'entry-client.tsx');
 const serverEntry = join(root, 'src', 'entry-server.tsx');
+const portraitFiles = ['hero-480.webp', 'hero-960.webp'].map((file) =>
+  join(root, 'public', 'assets', 'portraits', file),
+);
+
+async function fileExists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
+}
+
+const portraitFileStates = await Promise.all(portraitFiles.map(fileExists));
+if (portraitFileStates.some(Boolean) && !portraitFileStates.every(Boolean)) {
+  throw new Error('Portrait export requires both hero-480.webp and hero-960.webp.');
+}
+const portraitAvailable = portraitFileStates.every(Boolean);
 
 function escapeHtml(value) {
   return value.replace(/[&<>"']/g, (character) => {
@@ -21,7 +40,7 @@ function stylesheetLinks(assets) {
     .join('\n');
 }
 
-function pageShell(locale, renderedPage, assets, siteOrigin) {
+function pageShell(locale, renderedPage, assets, siteOrigin, hasPortrait) {
   const title = escapeHtml(renderedPage.page.title);
   const description = escapeHtml(renderedPage.page.description);
   const styles = stylesheetLinks(assets);
@@ -47,7 +66,7 @@ function pageShell(locale, renderedPage, assets, siteOrigin) {
 ${canonical ? `${canonical}\n` : ''}${styles ? `${styles}\n` : ''}    <script type="module" crossorigin src="/${escapeHtml(assets.file)}"></script>
   </head>
   <body>
-    <div id="root" data-locale="${locale}">${renderedPage.html}</div>
+    <div id="root" data-locale="${locale}" data-portrait-available="${hasPortrait}">${renderedPage.html}</div>
   </body>
 </html>
 `;
@@ -111,12 +130,16 @@ try {
 
   const siteOrigin = serverModule.validateSiteOrigin(process.env.SITE_URL);
   for (const locale of ['en', 'pl']) {
-    const renderedPage = serverModule.render(locale);
+    const renderedPage = serverModule.render(locale, portraitAvailable);
     const output = join(distDirectory, locale, 'index.html');
     await import('node:fs/promises').then(({ mkdir }) =>
       mkdir(join(distDirectory, locale), { recursive: true }),
     );
-    await writeFile(output, pageShell(locale, renderedPage, clientAssets, siteOrigin), 'utf8');
+    await writeFile(
+      output,
+      pageShell(locale, renderedPage, clientAssets, siteOrigin, portraitAvailable),
+      'utf8',
+    );
   }
 
   await rm(join(distDirectory, '.vite'), { recursive: true, force: true });
