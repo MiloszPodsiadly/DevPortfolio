@@ -66,4 +66,6 @@ The sample above is explanatory only; replace it with an owner-confirmed origin 
 
 The planning files stay in the ignored `prompts/` directory and are not duplicated into tracked documentation. The masterplan source is `prompts/plan/Personal_Portfolio_Masterplan_v2.1_Blue_Violet.md` in the owner's workspace.
 
-No GitHub Actions run, Cloudflare Pages project, branch protection, preview deployment, custom domain, or production deployment is claimed by this repository. See [Cloudflare setup](docs/cloudflare-setup.md) and [GitHub settings](docs/github-settings.md) for owner-run checklists. Project and privacy facts still need their dedicated reviews.
+The GitHub Actions workflow is defined in `.github/workflows/ci.yml`. It runs separate `quality` and `e2e` jobs for pushes to `main` and pull requests targeting `main`; the E2E job uses the Playwright image version matched to the lockfile. A workflow definition is not proof that checks passed: inspect the checks for the exact PR head before merging.
+
+Branch protection, required-check settings, Cloudflare Pages configuration, preview deployment, custom domain, and production deployment are owner-managed and are not asserted by this repository. See [Cloudflare setup](docs/cloudflare-setup.md) and [GitHub settings](docs/github-settings.md) for setup and release checks. Project and privacy facts remain subject to their dedicated reviews.
