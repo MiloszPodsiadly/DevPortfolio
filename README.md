@@ -1,6 +1,8 @@
 # Personal Portfolio
 
-A small, static-first portfolio foundation for **Junior Software Developer**. It prerenders English and Polish HTML at build time, then hydrates the same React tree in the browser. The first increment is intentionally a minimal introduction: the full visual identity belongs to PF-002, verified project content to PF-003, and final SEO to PF-004.
+A small, static-first portfolio for **Junior Software Developer**. It prerenders English and Polish HTML at build time, then hydrates the same React tree in the browser. PF-002 adds the blue/violet visual identity, responsive hero and navigation, and reusable visual components. Verified project content and profile details belong to PF-003; final SEO belongs to PF-004.
+
+The hero currently uses decorative SVG artwork. The owner-approved portrait is still blocked pending a separate clean asset with a light shirt and no pink hair glow; see [portrait asset contract](docs/portrait-asset-contract.md).
 
 ## Requirements
 
@@ -62,6 +64,6 @@ The sample above is explanatory only; replace it with an owner-confirmed origin 
 
 ## Repository and deployment state
 
-The planning files stay in the ignored `prompts/` directory and are not duplicated into tracked documentation. The masterplan source is `prompts/plan/Personal_Portfolio_FINAL_Masterplan_v2.0.md` in the owner's workspace.
+The planning files stay in the ignored `prompts/` directory and are not duplicated into tracked documentation. The masterplan source is `prompts/plan/Personal_Portfolio_Masterplan_v2.1_Blue_Violet.md` in the owner's workspace.
 
 No GitHub Actions run, Cloudflare Pages project, branch protection, preview deployment, custom domain, or production deployment is claimed by this repository. See [Cloudflare setup](docs/cloudflare-setup.md) and [GitHub settings](docs/github-settings.md) for owner-run checklists. Project and privacy facts still need their dedicated reviews.
