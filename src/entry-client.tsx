@@ -15,6 +15,7 @@ const locale: Locale = isLocale(prerenderedLocale)
   : localeFromPath(window.location.pathname);
 
 document.documentElement.lang = locale;
+document.documentElement.classList.add('js');
 const app = <App locale={locale} />;
 
 if (container.hasChildNodes()) {
