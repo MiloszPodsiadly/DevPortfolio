@@ -1,0 +1,67 @@
+# Personal Portfolio
+
+A small, static-first portfolio foundation for **Junior Software Developer**. It prerenders English and Polish HTML at build time, then hydrates the same React tree in the browser. The first increment is intentionally a minimal introduction: the full visual identity belongs to PF-002, verified project content to PF-003, and final SEO to PF-004.
+
+## Requirements
+
+- Node.js `26.13.0` (`.node-version`)
+- npm `11.20.0` (bundled with the pinned Node release)
+
+On Windows, open PowerShell in the repository after installing the pinned Node release:
+
+```powershell
+node --version
+npm ci
+npm run dev
+```
+
+The local development shell is available at the Vite URL printed in the terminal. The production build emits static files to `dist/`.
+
+## Scripts
+
+| Command                 | Purpose                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `npm run dev`           | Start the local Vite development server.                                   |
+| `npm run build`         | Build hashed client assets and prerender `/en/`, `/pl/`, and `404.html`.   |
+| `npm run preview`       | Serve the built files locally.                                             |
+| `npm run lint`          | Run ESLint.                                                                |
+| `npm run format:check`  | Check formatting with Prettier.                                            |
+| `npm run typecheck`     | Run strict TypeScript checks.                                              |
+| `npm run test`          | Run unit and component tests with Vitest.                                  |
+| `npm run verify:output` | Fail if the built static output breaks its contracts.                      |
+| `npm run test:e2e`      | Run Playwright browser and accessibility checks against the built preview. |
+
+Typical local verification:
+
+```powershell
+npm ci
+npm run format:check
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm run verify:output
+npx playwright install chromium
+npm run test:e2e
+```
+
+The initial HTML contains its content and links before JavaScript runs. React hydration adds progressive enhancement; JavaScript is not required to read either locale. The production build has no server, API, database, analytics, contact form, or external runtime fonts.
+
+## Build and SEO inputs
+
+`npm run build` creates `dist/en/index.html`, `dist/pl/index.html`, `dist/404.html`, the hashed client assets, and Cloudflare Pages `_redirects`. It does not create a root SPA fallback. `public/_redirects` asks Cloudflare Pages to send `/` to `/en/` with HTTP 302; local Vite preview does not prove that hosted redirect or the hosted HTTP 404 behavior.
+
+No canonical domain has been confirmed. Builds omit canonical and hreflang tags until `SITE_URL` is supplied as an absolute HTTPS origin:
+
+```powershell
+$env:SITE_URL = "https://your-confirmed-domain.example"
+npm run build
+```
+
+The sample above is explanatory only; replace it with an owner-confirmed origin before use. Do not publish a placeholder domain. Canonical, hreflang, sitemap, and full SEO metadata remain PF-004 release work.
+
+## Repository and deployment state
+
+The planning files stay in the ignored `prompts/` directory and are not duplicated into tracked documentation. The masterplan source is `prompts/plan/Personal_Portfolio_FINAL_Masterplan_v2.0.md` in the owner's workspace.
+
+No GitHub Actions run, Cloudflare Pages project, branch protection, preview deployment, custom domain, or production deployment is claimed by this repository. See [Cloudflare setup](docs/cloudflare-setup.md) and [GitHub settings](docs/github-settings.md) for owner-run checklists. Project and privacy facts still need their dedicated reviews.
