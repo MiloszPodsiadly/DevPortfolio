@@ -88,6 +88,9 @@ jobs:
       - name: Verify static output
         run: npm run verify:output
 
+      - name: Verify Vite dev and production portrait parity
+        run: npm run test:portrait-parity
+
       - name: Run browser and accessibility tests
         id: browser_tests
         run: npm run test:e2e

@@ -1,14 +1,47 @@
-# Visual acceptance
+# Repeatable visual QA
 
-CI does not create, upload, or compare Playwright screenshots. Screenshot baselines were removed because they made CI depend on image snapshots. Playwright still checks responsive layout and behavior at 320, 375, 390, 430, 768, 820, 821, 1024, 1280, 1440, and 1920 CSS-pixel widths in both locales.
+The main CI has no screenshot baselines and does not compare rendered images. Playwright functional, accessibility, responsive, and portrait-parity checks remain CI gates. `npm run qa:visual` creates a separate set of local screenshots for human review; it fails if either public WebP export or the loaded portrait is missing.
 
-Review visual changes manually in the browser at 390×844 and 1440×900. The ignored `test-results/` directory is reserved for temporary Playwright failure artifacts and must not be committed.
+## Capture
 
-## Acceptance checklist
+Install the project dependencies and matching Chromium browser once, then run:
 
-- Navy, blue and violet remain dominant; pink is limited to small decorative accents.
-- The moon and scene remain cool blue/lavender and do not reduce text contrast.
-- At 390×844, copy and CTA precede the decorative scene without overlap or horizontal scrolling.
-- At 1440×900, the hero and project heading fit the viewport.
-- Navigation labels and page content render correctly in both locales.
-- Manual review does not replace owner approval of identity, publication, crop or wardrobe. The supplied source shows a light shirt without a jacket; final visual approval remains with the owner.
+```powershell
+npm ci
+npx playwright install chromium
+npm run qa:visual
+```
+
+The command builds the static site, serves the production preview, and captures:
+
+- `test-results/visual-review/en-390x844.png`
+- `test-results/visual-review/en-1440x900.png`
+- `test-results/visual-review/pl-390x844.png`
+- `test-results/visual-review/pl-1440x900.png`
+
+Each page waits for `document.fonts.ready` and for the real portrait to decode before capture. The script checks the localized `alt`, loaded image dimensions, layout overlap, and browser errors. `manifest.json` records Chromium's version, operating system, architecture, viewport, DPR, color scheme, and reduced-motion setting. The entire `test-results/` directory is ignored by Git; do not commit these images.
+
+## Consistent captures
+
+For comparisons across runs, use the same operating system, Chromium build, and installed fonts. Windows and Linux may render fonts and antialiasing differently. The browser package is locked by `@playwright/test` `1.65.0`; CI uses `mcr.microsoft.com/playwright:v1.65.0-noble`.
+
+To create the canonical Linux render from the repository root where Docker is available:
+
+```sh
+docker run --rm -v "$PWD:/work" -w /work mcr.microsoft.com/playwright:v1.65.0-noble \
+  bash -lc 'npm ci && npm run qa:visual'
+```
+
+This is a manual artifact-generation command. The CI workflow does not upload, compare, or regenerate visual screenshots, and there are no checked-in image baselines to update.
+
+## Owner review checklist
+
+The script can verify that an image loaded and that the copy/CTA do not overlap the visual area. It cannot approve the person's identity, the publication decision, or whether the crop looks right. Owner approval remains pending until the four images are reviewed for:
+
+- light shirt, full face and hair, natural skin and hair color, and no pink/magenta halo;
+- crop and headroom at phone and desktop sizes;
+- legible contrast, visible CTA, and scene decorations kept behind the portrait;
+- correct Polish and English labels and layout;
+- no horizontal scroll, clipping, or text overlap.
+
+Record `CODE VERIFIED` separately from `OWNER APPROVED`. A successful capture is not visual approval.

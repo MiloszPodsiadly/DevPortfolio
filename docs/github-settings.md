@@ -5,7 +5,7 @@
 `.github/workflows/ci.yml` runs on pushes to `main` and pull requests targeting `main`. It defines two independent required-quality outcomes:
 
 - `quality` — formatting, lint, TypeScript, unit/component tests, static build, and output verification.
-- `e2e` — locked dependency install, Playwright version report, build/output verification, and Chromium browser/accessibility tests in the Playwright container pinned to the version in `package-lock.json`.
+- `e2e` — locked dependency install, Playwright version report, build/output verification, Chromium browser/accessibility tests, and Vite dev/preview portrait parity in the Playwright container pinned to the version in `package-lock.json`.
 
 The workflow uses a least-privilege `contents: read` token and cancels obsolete runs for the same branch or PR. A workflow file or a mergeable PR does not prove that a check passed. Review the latest run attached to the exact PR head SHA; distinguish a failed job from a skipped job.
 

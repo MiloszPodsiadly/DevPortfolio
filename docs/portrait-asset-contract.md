@@ -17,9 +17,10 @@ The current owner-supplied source is a clean, photorealistic head-and-shoulders 
 - The supplied PNG is 1122×1402 and contains no EXIF or text metadata chunks. `npm run export:portrait` uses the installed Playwright Chromium canvas to resize and encode metadata-free WebP variants while preserving the source aspect ratio.
 - Exports are `public/assets/portraits/hero-480.webp` (480×600) and `public/assets/portraits/hero-960.webp` (960×1200). The client uses `srcset`/`sizes`, intrinsic dimensions, eager loading and high fetch priority because the portrait is in the Hero.
 - The build includes the portrait only when both exports exist. If both are absent, the prerendered page omits the image and retains the decorative fallback, including with JavaScript disabled. A partial pair fails the build.
+- Vite dev checks the same pair before injecting `data-portrait-available`; both exports show the image, no exports show the scene fallback, and a partial pair fails explicitly. `npm run test:portrait-parity` covers both locales in dev and production preview, then checks the dev fallback against an empty temporary public directory.
 - Compose from chest/shoulders upward with headroom and side margin. Keep the face and hair within a centered mobile-safe crop at 320–430 px and avoid placing title, decoration, or controls over the face.
-- Before publication, review the actual source and desktop/mobile crops at 1440×900 and 390×844.
+- Before publication, run `npm run qa:visual` and review the actual source and desktop/mobile crops at 1440×900 and 390×844. Screenshots stay in ignored `test-results/visual-review/` and are never baseline fixtures.
 
 ## `NO-PINK-HAIR` visual QA
 
-The source photo was inspected and shows natural brown hair without a visible pink/magenta halo. The owner should review the desktop and phone presentation for crop, neutral skin, edge quality, overlap and scene glow on the hair. CI does not capture or compare screenshots.
+The source photo shows natural brown hair without a visible pink/magenta halo. The repeatable capture script verifies that the photo loaded before saving each screenshot; this check does not judge identity, crop quality or visual approval. The owner must review the desktop and phone screenshots for the shirt, face, hair, crop, contrast, CTA, scene, and both locales. CI does not capture or compare screenshots.

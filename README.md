@@ -21,17 +21,19 @@ The local development shell is available at the Vite URL printed in the terminal
 
 ## Scripts
 
-| Command                 | Purpose                                                                    |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `npm run dev`           | Start the local Vite development server.                                   |
-| `npm run build`         | Build hashed client assets and prerender `/en/`, `/pl/`, and `404.html`.   |
-| `npm run preview`       | Serve the built files locally.                                             |
-| `npm run lint`          | Run ESLint.                                                                |
-| `npm run format:check`  | Check formatting with Prettier.                                            |
-| `npm run typecheck`     | Run strict TypeScript checks.                                              |
-| `npm run test`          | Run unit and component tests with Vitest.                                  |
-| `npm run verify:output` | Fail if the built static output breaks its contracts.                      |
-| `npm run test:e2e`      | Run Playwright browser and accessibility checks against the built preview. |
+| Command                        | Purpose                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------ |
+| `npm run dev`                  | Start the local Vite development server.                                                   |
+| `npm run build`                | Build hashed client assets and prerender `/en/`, `/pl/`, and `404.html`.                   |
+| `npm run preview`              | Serve the built files locally.                                                             |
+| `npm run lint`                 | Run ESLint.                                                                                |
+| `npm run format:check`         | Check formatting with Prettier.                                                            |
+| `npm run typecheck`            | Run strict TypeScript checks.                                                              |
+| `npm run test`                 | Run unit and component tests with Vitest.                                                  |
+| `npm run verify:output`        | Fail if the built static output breaks its contracts.                                      |
+| `npm run test:e2e`             | Run Playwright browser and accessibility checks against the built preview.                 |
+| `npm run test:portrait-parity` | Check portrait loading in Vite dev and production preview, plus the no-image dev fallback. |
+| `npm run qa:visual`            | Build and capture four owner-review screenshots in the ignored QA directory.               |
 
 Typical local verification:
 
@@ -44,8 +46,12 @@ npm run test
 npm run build
 npm run verify:output
 npx playwright install chromium
+npm run test:portrait-parity
 npm run test:e2e
+npm run qa:visual
 ```
+
+`qa:visual` writes `en-390x844.png`, `en-1440x900.png`, `pl-390x844.png`, and `pl-1440x900.png` under the ignored `test-results/visual-review/` directory. It records the Chromium build and capture settings in `manifest.json`; the images are local review artifacts and are not committed.
 
 The initial HTML contains its content and links before JavaScript runs. React hydration adds progressive enhancement; JavaScript is not required to read either locale. The production build has no server, API, database, analytics, contact form, or external runtime fonts.
 
