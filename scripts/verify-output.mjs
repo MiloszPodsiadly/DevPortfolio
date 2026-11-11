@@ -24,6 +24,14 @@ function attributeValues(html, name) {
   );
 }
 
+function themeColor(html, filename) {
+  const meta = html.match(/<meta\b(?=[^>]*\bname=["']theme-color["'])[^>]*>/i)?.[0];
+  assert.ok(meta, `${filename} is missing its theme-color meta tag.`);
+  const color = attributeValues(meta, 'content')[0];
+  assert.match(color ?? '', /^#[\da-f]{6}$/i, `${filename} has an invalid theme-color.`);
+  return color.toUpperCase();
+}
+
 async function allFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const paths = await Promise.all(
@@ -59,6 +67,7 @@ function checkLinks(html, filename, filesByRelativePath) {
 
 export async function verifyOutput({
   distDirectory = defaultDist,
+  sourceIndexPath = resolve(process.cwd(), 'index.html'),
   siteUrl = process.env.SITE_URL,
 } = {}) {
   const resolvedDist = resolve(distDirectory);
@@ -76,6 +85,9 @@ export async function verifyOutput({
   for (const required of ['en/index.html', 'pl/index.html', '404.html', '_redirects']) {
     assert.ok(filePaths.has(required), `Missing dist/${required}.`);
   }
+  const devIndex = await readFile(sourceIndexPath, 'utf8');
+  const expectedThemeColor = themeColor(devIndex, 'index.html');
+  assert.equal(expectedThemeColor, '#070D20', 'The design system theme-color must be #070D20.');
   assert.ok(!filePaths.has('index.html'), 'The build must not emit a root SPA fallback page.');
   assert.ok(
     ![...filePaths].some((path) =>
@@ -105,6 +117,11 @@ export async function verifyOutput({
     const filename = `${locale}/index.html`;
     const html = await readFile(join(resolvedDist, filename), 'utf8');
     htmlPages[locale] = html;
+    assert.equal(
+      themeColor(html, filename),
+      expectedThemeColor,
+      `${filename} theme-color must match index.html.`,
+    );
     assert.match(
       html,
       new RegExp(`<html\\b[^>]*\\blang=["']${locale}["']`, 'i'),
@@ -213,6 +230,11 @@ export async function verifyOutput({
     'English and Polish output must contain distinct content.',
   );
   const notFound = await readFile(join(resolvedDist, '404.html'), 'utf8');
+  assert.equal(
+    themeColor(notFound, '404.html'),
+    expectedThemeColor,
+    '404.html theme-color must match index.html.',
+  );
   assert.match(notFound, /<h1\b[^>]*>[^<]+<\/h1>/i, '404.html must contain a useful heading.');
   assert.match(notFound, /href=["']\/en\/["']/i, '404.html must link to English.');
   assert.match(notFound, /href=["']\/pl\/["']/i, '404.html must link to Polish.');

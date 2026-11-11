@@ -1,31 +1,14 @@
-import { access, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build as viteBuild } from 'vite';
+import { getPortraitAvailability } from './portrait-assets.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const distDirectory = join(root, 'dist');
 const clientEntry = join(root, 'src', 'entry-client.tsx');
 const serverEntry = join(root, 'src', 'entry-server.tsx');
-const portraitFiles = ['hero-480.webp', 'hero-960.webp'].map((file) =>
-  join(root, 'public', 'assets', 'portraits', file),
-);
-
-async function fileExists(path) {
-  try {
-    await access(path);
-    return true;
-  } catch (error) {
-    if (error.code === 'ENOENT') return false;
-    throw error;
-  }
-}
-
-const portraitFileStates = await Promise.all(portraitFiles.map(fileExists));
-if (portraitFileStates.some(Boolean) && !portraitFileStates.every(Boolean)) {
-  throw new Error('Portrait export requires both hero-480.webp and hero-960.webp.');
-}
-const portraitAvailable = portraitFileStates.every(Boolean);
+const portraitAvailable = await getPortraitAvailability(join(root, 'public'));
 
 function escapeHtml(value) {
   return value.replace(/[&<>"']/g, (character) => {
