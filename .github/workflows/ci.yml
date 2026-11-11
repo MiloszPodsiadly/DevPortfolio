@@ -71,14 +71,16 @@ jobs:
           node-version-file: .node-version
           cache: npm
 
-      - name: Report pinned runtime and browser package
+      - name: Report pinned Node runtime
         run: |
           node --version
           npm --version
-          npx playwright --version
 
       - name: Install locked dependencies
         run: npm ci
+
+      - name: Report installed Playwright package
+        run: npx playwright --version
 
       - name: Build static pages
         run: npm run build

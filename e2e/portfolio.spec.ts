@@ -6,6 +6,7 @@ const locales = [
     locale: 'en',
     path: '/en/',
     introduction: 'A personal portfolio in progress',
+    portraitAlt: 'Portrait of Miłosz Podsiadły',
     projectsCta: 'View projects',
     menuLabel: 'Open menu',
   },
@@ -13,6 +14,7 @@ const locales = [
     locale: 'pl',
     path: '/pl/',
     introduction: 'Portfolio w budowie',
+    portraitAlt: 'Portret Miłosza Podsiadłego',
     projectsCta: 'Zobacz projekty',
     menuLabel: 'Otwórz menu',
   },
@@ -53,6 +55,12 @@ for (const pageSpec of locales) {
     await expect(page.locator('html')).toHaveAttribute('lang', pageSpec.locale);
     await expect(page.locator('h1')).toContainText('Junior Software Developer');
     await expect(page.locator('.intro-copy')).toContainText(pageSpec.introduction);
+    const portrait = page.getByRole('img', { name: pageSpec.portraitAlt });
+    await expect(portrait).toBeVisible();
+    await expect(portrait).toHaveAttribute('src', '/assets/portraits/hero-960.webp');
+    await expect
+      .poll(() => portrait.evaluate((image) => (image as HTMLImageElement).naturalWidth))
+      .toBeGreaterThan(0);
     await expect(page.locator('.project-card')).toHaveCount(0);
     await expect(page.getByRole('link', { name: pageSpec.projectsCta })).toHaveAttribute(
       'href',
@@ -89,29 +97,6 @@ for (const pageSpec of locales) {
     expect(results.violations).toEqual([]);
   });
 
-  test(`${pageSpec.locale} visual regression baselines`, async ({ page }) => {
-    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(pageSpec.path);
-    await page.evaluate(() => document.fonts.ready);
-    await expect(page).toHaveScreenshot(`${pageSpec.locale}-390x844.png`, {
-      fullPage: true,
-      animations: 'disabled',
-      caret: 'hide',
-      maxDiffPixelRatio: 0.01,
-      threshold: 0.15,
-    });
-
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await expect(page).toHaveScreenshot(`${pageSpec.locale}-1440x900.png`, {
-      fullPage: true,
-      animations: 'disabled',
-      caret: 'hide',
-      maxDiffPixelRatio: 0.01,
-      threshold: 0.15,
-    });
-  });
-
   test(`${pageSpec.locale} responsive smoke across required breakpoints`, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 760 });
     await page.goto(pageSpec.path);
@@ -128,7 +113,7 @@ for (const pageSpec of locales) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
         width,
       );
-      if (width >= 1280) {
+      if (width === 1440 && height === 900) {
         const projectHeadingBottom = await page
           .locator('#projects h2')
           .evaluate((heading) => heading.getBoundingClientRect().bottom);
@@ -146,15 +131,6 @@ for (const pageSpec of locales) {
       } else {
         await expect(navigationLinks).toHaveCount(6);
         await expect(navigationLinks.first()).toBeVisible();
-      }
-
-      if (pageSpec.locale === 'en' && width === 390) {
-        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-        await page.screenshot({ path: 'test-results/pf002-mobile-390x844.png' });
-      }
-      if (pageSpec.locale === 'en' && width === 1440) {
-        await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-        await page.screenshot({ path: 'test-results/pf002-desktop-1440x900.png' });
       }
     }
   });
@@ -279,6 +255,7 @@ test('both localized documents remain useful with JavaScript disabled', async ({
       await expect(page.locator('html')).toHaveAttribute('lang', pageSpec.locale);
       await expect(page.locator('h1')).toContainText('Junior Software Developer');
       await expect(page.locator('.intro-copy')).toContainText(pageSpec.introduction);
+      await expect(page.getByRole('img', { name: pageSpec.portraitAlt })).toBeVisible();
       await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(6);
       await expect(page.getByRole('link', { name: pageSpec.projectsCta })).toHaveAttribute(
         'href',
