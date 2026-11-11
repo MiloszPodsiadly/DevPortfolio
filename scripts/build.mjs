@@ -15,12 +15,16 @@ function escapeHtml(value) {
   });
 }
 
+function stylesheetLinks(assets) {
+  return (assets.css ?? [])
+    .map((file) => `    <link rel="stylesheet" href="/${escapeHtml(file)}" />`)
+    .join('\n');
+}
+
 function pageShell(locale, renderedPage, assets, siteOrigin) {
   const title = escapeHtml(renderedPage.page.title);
   const description = escapeHtml(renderedPage.page.description);
-  const styles = (assets.css ?? [])
-    .map((file) => `    <link rel="stylesheet" href="/${escapeHtml(file)}" />`)
-    .join('\n');
+  const styles = stylesheetLinks(assets);
   const canonical = siteOrigin
     ? [
         `    <link rel="canonical" href="${siteOrigin}/${locale}/" />`,
@@ -37,7 +41,7 @@ function pageShell(locale, renderedPage, assets, siteOrigin) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b0613" />
+    <meta name="theme-color" content="#070D20" />
     <title>${title}</title>
     <meta name="description" content="${description}" />
 ${canonical ? `${canonical}\n` : ''}${styles ? `${styles}\n` : ''}    <script type="module" crossorigin src="/${escapeHtml(assets.file)}"></script>
@@ -93,6 +97,17 @@ try {
     (entry) => entry.isEntry && entry.src?.endsWith('entry-client.tsx'),
   );
   if (!clientAssets?.file) throw new Error('Vite manifest is missing the client entry assets.');
+
+  const notFoundPath = join(distDirectory, '404.html');
+  const notFoundHtml = await readFile(notFoundPath, 'utf8');
+  const notFoundStyles = stylesheetLinks(clientAssets);
+  if (!notFoundStyles) throw new Error('Vite manifest is missing the shared stylesheet.');
+  if (!notFoundHtml.includes('</head>')) throw new Error('The 404 template is missing </head>.');
+  await writeFile(
+    notFoundPath,
+    notFoundHtml.replace('</head>', `${notFoundStyles}\n  </head>`),
+    'utf8',
+  );
 
   const siteOrigin = serverModule.validateSiteOrigin(process.env.SITE_URL);
   for (const locale of ['en', 'pl']) {
