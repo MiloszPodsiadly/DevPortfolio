@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -6,16 +6,21 @@ import { verifyOutput } from './verify-output.mjs';
 
 let fixtureDirectory;
 
-async function writeValidFixture(directory, siteOrigin) {
+async function writeValidFixture(directory, siteOrigin, portraitAvailable = false) {
   await mkdir(join(directory, 'en'), { recursive: true });
   await mkdir(join(directory, 'pl'), { recursive: true });
   await mkdir(join(directory, 'assets'), { recursive: true });
   await writeFile(join(directory, 'assets', 'client-abcdef12.js'), '');
   await writeFile(join(directory, 'assets', 'site-abcdef12.css'), '');
+  if (portraitAvailable) {
+    await mkdir(join(directory, 'assets', 'portraits'), { recursive: true });
+    await writeFile(join(directory, 'assets', 'portraits', 'hero-480.webp'), '480');
+    await writeFile(join(directory, 'assets', 'portraits', 'hero-960.webp'), '960');
+  }
   await writeFile(join(directory, '_redirects'), '/ /en/ 302\n');
   await writeFile(
     join(directory, '404.html'),
-    '<html lang="en"><body><main><h1>Page not found</h1><a href="/en/">English</a><a href="/pl/">Polski</a></main></body></html>',
+    '<html lang="en"><head><meta name="theme-color" content="#070D20"></head><body><main><h1>Page not found</h1><a href="/en/">English</a><a href="/pl/">Polski</a></main></body></html>',
   );
 
   for (const locale of ['en', 'pl']) {
@@ -33,7 +38,10 @@ async function writeValidFixture(directory, siteOrigin) {
       locale === 'en'
         ? 'An English introduction with enough meaningful content to satisfy the static output contract.'
         : 'Polskie wprowadzenie z wystarczającą treścią, aby spełnić kontrakt statycznego HTML.';
-    const html = `<html lang="${locale}"><head><title>Junior Software Developer</title><meta name="description" content="Portfolio introduction"><link rel="stylesheet" href="/assets/site-abcdef12.css">${seo}<script type="module" src="/assets/client-abcdef12.js"></script></head><body><a href="#main-content">Skip</a><nav><a href="/en/">English</a><a href="/pl/">Polski</a></nav><main id="main-content"><h1>Junior Software Developer</h1><p>${introduction}</p></main></body></html>`;
+    const portrait = portraitAvailable
+      ? '<img class="hero-portrait" src="/assets/portraits/hero-960.webp" srcset="/assets/portraits/hero-480.webp 480w, /assets/portraits/hero-960.webp 960w" alt="Portrait">'
+      : '';
+    const html = `<html lang="${locale}"><head><title>Junior Software Developer</title><meta name="theme-color" content="#070D20"><meta name="description" content="Portfolio introduction"><link rel="stylesheet" href="/assets/site-abcdef12.css">${seo}<script type="module" src="/assets/client-abcdef12.js"></script></head><body><div id="root" data-portrait-available="${portraitAvailable}">${portrait}<a href="#main-content">Skip</a><nav><a href="/en/">English</a><a href="/pl/">Polski</a></nav><main id="main-content"><h1>Junior Software Developer</h1><p>${introduction}</p></main></div></body></html>`;
     await writeFile(join(directory, locale, 'index.html'), html);
   }
 }
@@ -58,15 +66,15 @@ describe('built output verification', () => {
     await mkdir(join(fixtureDirectory, 'pl'), { recursive: true });
     await writeFile(
       join(fixtureDirectory, 'en', 'index.html'),
-      '<html lang="en"><head><title>Sample</title><meta name="description" content="Sample page"></head><body><h1>Junior Software Developer</h1><h1>Duplicate</h1></body></html>',
+      '<html lang="en"><head><title>Sample</title><meta name="theme-color" content="#070D20"><meta name="description" content="Sample page"></head><body><h1>Junior Software Developer</h1><h1>Duplicate</h1></body></html>',
     );
     await writeFile(
       join(fixtureDirectory, 'pl', 'index.html'),
-      '<html lang="pl"><body><h1>Empty</h1></body></html>',
+      '<html lang="pl"><head><meta name="theme-color" content="#070D20"></head><body><h1>Empty</h1></body></html>',
     );
     await writeFile(
       join(fixtureDirectory, '404.html'),
-      '<h1>Not found</h1><a href="/en/">EN</a><a href="/pl/">PL</a>',
+      '<meta name="theme-color" content="#070D20"><h1>Not found</h1><a href="/en/">EN</a><a href="/pl/">PL</a>',
     );
     await writeFile(join(fixtureDirectory, '_redirects'), '/ /en/ 302\n');
     await expect(verifyOutput({ distDirectory: fixtureDirectory })).rejects.toThrow(
@@ -80,5 +88,26 @@ describe('built output verification', () => {
     await expect(
       verifyOutput({ distDirectory: fixtureDirectory, siteUrl: 'https://portfolio.dev' }),
     ).resolves.toMatchObject({ files: 6 });
+  });
+
+  it('accepts both optimized portrait exports when the prerendered page enables the portrait', async () => {
+    fixtureDirectory = await mkdtemp(join(tmpdir(), 'portfolio-output-fixture-'));
+    await writeValidFixture(fixtureDirectory, undefined, true);
+
+    await expect(verifyOutput({ distDirectory: fixtureDirectory })).resolves.toMatchObject({
+      files: 8,
+    });
+  });
+
+  it('fails when a production page theme-color differs from the development template', async () => {
+    fixtureDirectory = await mkdtemp(join(tmpdir(), 'portfolio-output-fixture-'));
+    await writeValidFixture(fixtureDirectory, undefined, true);
+    const polishPath = join(fixtureDirectory, 'pl', 'index.html');
+    const polishHtml = await readFile(polishPath, 'utf8');
+    await writeFile(polishPath, polishHtml.replace('#070D20', '#FF5BA7'));
+
+    await expect(verifyOutput({ distDirectory: fixtureDirectory })).rejects.toThrow(
+      'pl/index.html theme-color must match index.html.',
+    );
   });
 });

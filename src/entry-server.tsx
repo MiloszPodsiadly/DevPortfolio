@@ -9,9 +9,9 @@ if (contentErrors.length > 0) {
   throw new Error(`Invalid locale content: ${contentErrors.join('; ')}`);
 }
 
-export function render(locale: Locale) {
+export function render(locale: Locale, portraitAvailable = false) {
   return {
-    html: renderToString(<App locale={locale} />),
+    html: renderToString(<App locale={locale} portraitAvailable={portraitAvailable} />),
     page: getPageContent(locale),
   };
 }

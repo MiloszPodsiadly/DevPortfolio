@@ -4,9 +4,11 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
-  workers: 2,
+  workers: process.env.CI ? 1 : 2,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? 'github' : 'line',
+  reporter: process.env.CI
+    ? [['github'], ['html', { outputFolder: 'playwright-report', open: 'never' }]]
+    : 'line',
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://127.0.0.1:4174',
     trace: 'retain-on-failure',

@@ -9,7 +9,31 @@ export interface PageContent {
   name: string;
   role: 'Junior Software Developer';
   introduction: string;
+  portraitAlt: string;
   skipLink: string;
+  primaryNavigation: string;
+  projectsLabel: string;
+  aboutLabel: string;
+  technologiesLabel: string;
+  socialLabel: string;
+  openMenuLabel: string;
+  closeMenuLabel: string;
+  projectsCta: string;
+  projectsEyebrow: string;
+  projectsTitle: string;
+  projectsDescription: string;
+  aboutEyebrow: string;
+  aboutTitle: string;
+  technologiesEyebrow: string;
+  technologiesTitle: string;
+  technologiesDescription: string;
+  siteTechnologiesLabel: string;
+  siteTechnologies: string[];
+  socialEyebrow: string;
+  socialTitle: string;
+  socialDescription: string;
+  repositoryLinkLabel: string;
+  demoLinkLabel: string;
   languageNavigation: string;
   englishLabel: string;
   polishLabel: string;
@@ -24,7 +48,32 @@ export const pageContent: Record<Locale, PageContent> = {
     role: 'Junior Software Developer',
     introduction:
       'A personal portfolio in progress, built to share a little about my work and interests.',
+    portraitAlt: 'Portrait of Miłosz Podsiadły',
     skipLink: 'Skip to main content',
+    primaryNavigation: 'Main navigation',
+    projectsLabel: 'Projects',
+    aboutLabel: 'About',
+    technologiesLabel: 'Technologies',
+    socialLabel: 'Profiles',
+    openMenuLabel: 'Open menu',
+    closeMenuLabel: 'Close menu',
+    projectsCta: 'View projects',
+    projectsEyebrow: 'Selected work',
+    projectsTitle: 'Featured projects',
+    projectsDescription:
+      'A personal portfolio in progress, built to share a little about my work and interests.',
+    aboutEyebrow: 'Profile',
+    aboutTitle: 'About',
+    technologiesEyebrow: 'Site stack',
+    technologiesTitle: 'Technologies',
+    technologiesDescription: 'Technologies used to build this portfolio:',
+    siteTechnologiesLabel: 'Portfolio technologies',
+    siteTechnologies: ['React', 'TypeScript', 'Vite', 'Tailwind CSS'],
+    socialEyebrow: 'Links',
+    socialTitle: 'Social profiles',
+    socialDescription: 'Only confirmed public profile links appear here.',
+    repositoryLinkLabel: 'Source code',
+    demoLinkLabel: 'Live demo',
     languageNavigation: 'Choose a language',
     englishLabel: 'English',
     polishLabel: 'Polski',
@@ -36,7 +85,32 @@ export const pageContent: Record<Locale, PageContent> = {
     name: 'Miłosz Podsiadły',
     role: 'Junior Software Developer',
     introduction: 'Portfolio w budowie, w którym opowiem o swojej pracy i zainteresowaniach.',
+    portraitAlt: 'Portret Miłosza Podsiadłego',
     skipLink: 'Przejdź do treści',
+    primaryNavigation: 'Nawigacja główna',
+    projectsLabel: 'Projekty',
+    aboutLabel: 'O mnie',
+    technologiesLabel: 'Technologie',
+    socialLabel: 'Profile',
+    openMenuLabel: 'Otwórz menu',
+    closeMenuLabel: 'Zamknij menu',
+    projectsCta: 'Zobacz projekty',
+    projectsEyebrow: 'Wybrane prace',
+    projectsTitle: 'Wybrane projekty',
+    projectsDescription:
+      'Portfolio w budowie, w którym opowiem o swojej pracy i zainteresowaniach.',
+    aboutEyebrow: 'Profil',
+    aboutTitle: 'O mnie',
+    technologiesEyebrow: 'Stack strony',
+    technologiesTitle: 'Technologie',
+    technologiesDescription: 'Technologie użyte do zbudowania tego portfolio:',
+    siteTechnologiesLabel: 'Technologie portfolio',
+    siteTechnologies: ['React', 'TypeScript', 'Vite', 'Tailwind CSS'],
+    socialEyebrow: 'Linki',
+    socialTitle: 'Profile społecznościowe',
+    socialDescription: 'Widoczne są tu tylko potwierdzone linki do publicznych profili.',
+    repositoryLinkLabel: 'Kod źródłowy',
+    demoLinkLabel: 'Demo na żywo',
     languageNavigation: 'Wybierz język',
     englishLabel: 'English',
     polishLabel: 'Polski',

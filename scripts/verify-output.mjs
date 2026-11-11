@@ -24,6 +24,14 @@ function attributeValues(html, name) {
   );
 }
 
+function themeColor(html, filename) {
+  const meta = html.match(/<meta\b(?=[^>]*\bname=["']theme-color["'])[^>]*>/i)?.[0];
+  assert.ok(meta, `${filename} is missing its theme-color meta tag.`);
+  const color = attributeValues(meta, 'content')[0];
+  assert.match(color ?? '', /^#[\da-f]{6}$/i, `${filename} has an invalid theme-color.`);
+  return color.toUpperCase();
+}
+
 async function allFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const paths = await Promise.all(
@@ -59,6 +67,7 @@ function checkLinks(html, filename, filesByRelativePath) {
 
 export async function verifyOutput({
   distDirectory = defaultDist,
+  sourceIndexPath = resolve(process.cwd(), 'index.html'),
   siteUrl = process.env.SITE_URL,
 } = {}) {
   const resolvedDist = resolve(distDirectory);
@@ -66,9 +75,19 @@ export async function verifyOutput({
   const filePaths = new Set(
     files.map((file) => relative(resolvedDist, file).replaceAll('\\', '/')),
   );
+  const portraitExports = ['assets/portraits/hero-480.webp', 'assets/portraits/hero-960.webp'];
+  const portraitExportStates = portraitExports.map((path) => filePaths.has(path));
+  assert.ok(
+    portraitExportStates.every((exists) => exists === portraitExportStates[0]),
+    'The build must include both portrait exports or neither one.',
+  );
+  const portraitAvailable = portraitExportStates.every(Boolean);
   for (const required of ['en/index.html', 'pl/index.html', '404.html', '_redirects']) {
     assert.ok(filePaths.has(required), `Missing dist/${required}.`);
   }
+  const devIndex = await readFile(sourceIndexPath, 'utf8');
+  const expectedThemeColor = themeColor(devIndex, 'index.html');
+  assert.equal(expectedThemeColor, '#070D20', 'The design system theme-color must be #070D20.');
   assert.ok(!filePaths.has('index.html'), 'The build must not emit a root SPA fallback page.');
   assert.ok(
     ![...filePaths].some((path) =>
@@ -79,6 +98,12 @@ export async function verifyOutput({
   assert.ok(
     ![...filePaths].some((path) => path.startsWith('.env')),
     'An environment file leaked into dist/.',
+  );
+  assert.ok(
+    ![...filePaths].some(
+      (path) => path.startsWith('assets-source/') || /hero-source\.(png|jpe?g|webp)$/i.test(path),
+    ),
+    'The private portrait source leaked into dist/.',
   );
 
   const redirects = await readFile(join(resolvedDist, '_redirects'), 'utf8');
@@ -92,6 +117,11 @@ export async function verifyOutput({
     const filename = `${locale}/index.html`;
     const html = await readFile(join(resolvedDist, filename), 'utf8');
     htmlPages[locale] = html;
+    assert.equal(
+      themeColor(html, filename),
+      expectedThemeColor,
+      `${filename} theme-color must match index.html.`,
+    );
     assert.match(
       html,
       new RegExp(`<html\\b[^>]*\\blang=["']${locale}["']`, 'i'),
@@ -123,6 +153,32 @@ export async function verifyOutput({
       placeholderPattern,
       `${filename} contains a placeholder production domain.`,
     );
+    assert.ok(
+      html.includes(`data-portrait-available="${portraitAvailable}"`),
+      `${filename} has a portrait availability flag inconsistent with the built assets.`,
+    );
+    if (portraitAvailable) {
+      assert.ok(
+        attributeValues(html, 'src').includes('/assets/portraits/hero-960.webp'),
+        `${filename} is missing the high-resolution portrait source.`,
+      );
+      assert.ok(
+        attributeValues(html, 'srcset').some((value) =>
+          value.includes('/assets/portraits/hero-480.webp 480w'),
+        ),
+        `${filename} is missing the responsive portrait source set.`,
+      );
+      assert.ok(
+        attributeValues(html, 'alt').some((value) => value.trim().length > 0),
+        `${filename} portrait must have localized alternative text.`,
+      );
+    } else {
+      assert.doesNotMatch(
+        html,
+        /class=["']hero-portrait["']/i,
+        `${filename} should use the scene fallback.`,
+      );
+    }
     checkLinks(html, filename, filePaths);
 
     const scriptSources = attributeValues(html, 'src');
@@ -174,6 +230,11 @@ export async function verifyOutput({
     'English and Polish output must contain distinct content.',
   );
   const notFound = await readFile(join(resolvedDist, '404.html'), 'utf8');
+  assert.equal(
+    themeColor(notFound, '404.html'),
+    expectedThemeColor,
+    '404.html theme-color must match index.html.',
+  );
   assert.match(notFound, /<h1\b[^>]*>[^<]+<\/h1>/i, '404.html must contain a useful heading.');
   assert.match(notFound, /href=["']\/en\/["']/i, '404.html must link to English.');
   assert.match(notFound, /href=["']\/pl\/["']/i, '404.html must link to Polish.');

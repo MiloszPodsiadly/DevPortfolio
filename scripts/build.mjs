@@ -2,11 +2,13 @@ import { readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build as viteBuild } from 'vite';
+import { getPortraitAvailability } from './portrait-assets.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const distDirectory = join(root, 'dist');
 const clientEntry = join(root, 'src', 'entry-client.tsx');
 const serverEntry = join(root, 'src', 'entry-server.tsx');
+const portraitAvailable = await getPortraitAvailability(join(root, 'public'));
 
 function escapeHtml(value) {
   return value.replace(/[&<>"']/g, (character) => {
@@ -15,12 +17,16 @@ function escapeHtml(value) {
   });
 }
 
-function pageShell(locale, renderedPage, assets, siteOrigin) {
-  const title = escapeHtml(renderedPage.page.title);
-  const description = escapeHtml(renderedPage.page.description);
-  const styles = (assets.css ?? [])
+function stylesheetLinks(assets) {
+  return (assets.css ?? [])
     .map((file) => `    <link rel="stylesheet" href="/${escapeHtml(file)}" />`)
     .join('\n');
+}
+
+function pageShell(locale, renderedPage, assets, siteOrigin, hasPortrait) {
+  const title = escapeHtml(renderedPage.page.title);
+  const description = escapeHtml(renderedPage.page.description);
+  const styles = stylesheetLinks(assets);
   const canonical = siteOrigin
     ? [
         `    <link rel="canonical" href="${siteOrigin}/${locale}/" />`,
@@ -37,13 +43,13 @@ function pageShell(locale, renderedPage, assets, siteOrigin) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0b0613" />
+    <meta name="theme-color" content="#070D20" />
     <title>${title}</title>
     <meta name="description" content="${description}" />
 ${canonical ? `${canonical}\n` : ''}${styles ? `${styles}\n` : ''}    <script type="module" crossorigin src="/${escapeHtml(assets.file)}"></script>
   </head>
   <body>
-    <div id="root" data-locale="${locale}">${renderedPage.html}</div>
+    <div id="root" data-locale="${locale}" data-portrait-available="${hasPortrait}">${renderedPage.html}</div>
   </body>
 </html>
 `;
@@ -94,14 +100,29 @@ try {
   );
   if (!clientAssets?.file) throw new Error('Vite manifest is missing the client entry assets.');
 
+  const notFoundPath = join(distDirectory, '404.html');
+  const notFoundHtml = await readFile(notFoundPath, 'utf8');
+  const notFoundStyles = stylesheetLinks(clientAssets);
+  if (!notFoundStyles) throw new Error('Vite manifest is missing the shared stylesheet.');
+  if (!notFoundHtml.includes('</head>')) throw new Error('The 404 template is missing </head>.');
+  await writeFile(
+    notFoundPath,
+    notFoundHtml.replace('</head>', `${notFoundStyles}\n  </head>`),
+    'utf8',
+  );
+
   const siteOrigin = serverModule.validateSiteOrigin(process.env.SITE_URL);
   for (const locale of ['en', 'pl']) {
-    const renderedPage = serverModule.render(locale);
+    const renderedPage = serverModule.render(locale, portraitAvailable);
     const output = join(distDirectory, locale, 'index.html');
     await import('node:fs/promises').then(({ mkdir }) =>
       mkdir(join(distDirectory, locale), { recursive: true }),
     );
-    await writeFile(output, pageShell(locale, renderedPage, clientAssets, siteOrigin), 'utf8');
+    await writeFile(
+      output,
+      pageShell(locale, renderedPage, clientAssets, siteOrigin, portraitAvailable),
+      'utf8',
+    );
   }
 
   await rm(join(distDirectory, '.vite'), { recursive: true, force: true });

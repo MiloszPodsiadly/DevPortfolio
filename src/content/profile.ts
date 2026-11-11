@@ -14,7 +14,7 @@ export interface Project {
   solution: string;
   role: string;
   technologies: string[];
-  repositoryUrl: string;
+  repositoryUrl?: string;
   demoUrl?: string;
   asset: string;
   publicationStatus: 'draft' | 'published';
@@ -42,10 +42,53 @@ export function validateLocaleContent(content: Record<string, unknown>): string[
     }
 
     const page = value as Record<string, unknown>;
-    for (const key of ['title', 'description', 'name', 'role', 'introduction']) {
+    for (const key of [
+      'title',
+      'description',
+      'eyebrow',
+      'name',
+      'role',
+      'introduction',
+      'portraitAlt',
+      'skipLink',
+      'primaryNavigation',
+      'projectsLabel',
+      'aboutLabel',
+      'technologiesLabel',
+      'socialLabel',
+      'openMenuLabel',
+      'closeMenuLabel',
+      'projectsCta',
+      'projectsEyebrow',
+      'projectsTitle',
+      'projectsDescription',
+      'aboutEyebrow',
+      'aboutTitle',
+      'technologiesEyebrow',
+      'technologiesTitle',
+      'technologiesDescription',
+      'siteTechnologiesLabel',
+      'socialEyebrow',
+      'socialTitle',
+      'socialDescription',
+      'repositoryLinkLabel',
+      'demoLinkLabel',
+      'languageNavigation',
+      'englishLabel',
+      'polishLabel',
+    ]) {
       if (typeof page[key] !== 'string' || page[key].trim().length === 0) {
         errors.push(`Missing ${key} for locale: ${locale}`);
       }
+    }
+    if (
+      !Array.isArray(page.siteTechnologies) ||
+      page.siteTechnologies.length === 0 ||
+      page.siteTechnologies.some(
+        (technology) => typeof technology !== 'string' || !technology.trim(),
+      )
+    ) {
+      errors.push(`Missing site technologies for locale: ${locale}`);
     }
     if (page.role !== 'Junior Software Developer') {
       errors.push(`Unexpected role for locale: ${locale}`);
@@ -85,7 +128,7 @@ export function validateProject(project: Project): string[] {
   ) {
     errors.push('Project technologies must contain non-empty values.');
   }
-  if (!validateExternalUrl(project.repositoryUrl))
+  if (project.repositoryUrl && !validateExternalUrl(project.repositoryUrl))
     errors.push('Project repository URL is invalid.');
   if (project.demoUrl && !validateExternalUrl(project.demoUrl)) {
     errors.push('Project demo URL is invalid.');

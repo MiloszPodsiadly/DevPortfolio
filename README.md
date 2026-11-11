@@ -1,6 +1,8 @@
 # Personal Portfolio
 
-A small, static-first portfolio foundation for **Junior Software Developer**. It prerenders English and Polish HTML at build time, then hydrates the same React tree in the browser. The first increment is intentionally a minimal introduction: the full visual identity belongs to PF-002, verified project content to PF-003, and final SEO to PF-004.
+A small, static-first portfolio for **Junior Software Developer**. It prerenders English and Polish HTML at build time, then hydrates the same React tree in the browser. PF-002 adds the blue/violet visual identity, responsive hero and navigation, and reusable visual components. Verified project content and profile details belong to PF-003; final SEO belongs to PF-004.
+
+The hero uses an owner-supplied portrait when the optimized WebP exports are present and falls back to the decorative SVG scene when they are absent. The original stays in the ignored `assets-source/portraits/` directory; only the 480 px and 960 px WebP exports are included in the public build. See the [portrait asset contract](docs/portrait-asset-contract.md) for the local export and visual review steps.
 
 ## Requirements
 
@@ -19,17 +21,19 @@ The local development shell is available at the Vite URL printed in the terminal
 
 ## Scripts
 
-| Command                 | Purpose                                                                    |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `npm run dev`           | Start the local Vite development server.                                   |
-| `npm run build`         | Build hashed client assets and prerender `/en/`, `/pl/`, and `404.html`.   |
-| `npm run preview`       | Serve the built files locally.                                             |
-| `npm run lint`          | Run ESLint.                                                                |
-| `npm run format:check`  | Check formatting with Prettier.                                            |
-| `npm run typecheck`     | Run strict TypeScript checks.                                              |
-| `npm run test`          | Run unit and component tests with Vitest.                                  |
-| `npm run verify:output` | Fail if the built static output breaks its contracts.                      |
-| `npm run test:e2e`      | Run Playwright browser and accessibility checks against the built preview. |
+| Command                        | Purpose                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------ |
+| `npm run dev`                  | Start the local Vite development server.                                                   |
+| `npm run build`                | Build hashed client assets and prerender `/en/`, `/pl/`, and `404.html`.                   |
+| `npm run preview`              | Serve the built files locally.                                                             |
+| `npm run lint`                 | Run ESLint.                                                                                |
+| `npm run format:check`         | Check formatting with Prettier.                                                            |
+| `npm run typecheck`            | Run strict TypeScript checks.                                                              |
+| `npm run test`                 | Run unit and component tests with Vitest.                                                  |
+| `npm run verify:output`        | Fail if the built static output breaks its contracts.                                      |
+| `npm run test:e2e`             | Run Playwright browser and accessibility checks against the built preview.                 |
+| `npm run test:portrait-parity` | Check portrait loading in Vite dev and production preview, plus the no-image dev fallback. |
+| `npm run qa:visual`            | Build and capture four owner-review screenshots in the ignored QA directory.               |
 
 Typical local verification:
 
@@ -42,8 +46,12 @@ npm run test
 npm run build
 npm run verify:output
 npx playwright install chromium
+npm run test:portrait-parity
 npm run test:e2e
+npm run qa:visual
 ```
+
+`qa:visual` writes `en-390x844.png`, `en-1440x900.png`, `pl-390x844.png`, and `pl-1440x900.png` under the ignored `test-results/visual-review/` directory. It records the Chromium build and capture settings in `manifest.json`; the images are local review artifacts and are not committed.
 
 The initial HTML contains its content and links before JavaScript runs. React hydration adds progressive enhancement; JavaScript is not required to read either locale. The production build has no server, API, database, analytics, contact form, or external runtime fonts.
 
@@ -62,6 +70,8 @@ The sample above is explanatory only; replace it with an owner-confirmed origin 
 
 ## Repository and deployment state
 
-The planning files stay in the ignored `prompts/` directory and are not duplicated into tracked documentation. The masterplan source is `prompts/plan/Personal_Portfolio_FINAL_Masterplan_v2.0.md` in the owner's workspace.
+The planning files stay in the ignored `prompts/` directory and are not duplicated into tracked documentation. The masterplan source is `prompts/plan/Personal_Portfolio_Masterplan_v2.1_Blue_Violet.md` in the owner's workspace.
 
-No GitHub Actions run, Cloudflare Pages project, branch protection, preview deployment, custom domain, or production deployment is claimed by this repository. See [Cloudflare setup](docs/cloudflare-setup.md) and [GitHub settings](docs/github-settings.md) for owner-run checklists. Project and privacy facts still need their dedicated reviews.
+The GitHub Actions workflow is defined in `.github/workflows/ci.yml`. It runs separate `quality` and `e2e` jobs for pushes to `main` and pull requests targeting `main`; the E2E job uses the Playwright image version matched to the lockfile. A workflow definition is not proof that checks passed: inspect the checks for the exact PR head before merging.
+
+Branch protection, required-check settings, Cloudflare Pages configuration, preview deployment, custom domain, and production deployment are owner-managed and are not asserted by this repository. See [Cloudflare setup](docs/cloudflare-setup.md) and [GitHub settings](docs/github-settings.md) for setup and release checks. Project and privacy facts remain subject to their dedicated reviews.
