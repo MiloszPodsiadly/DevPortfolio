@@ -23,6 +23,8 @@ const responsiveSizes = [
   { width: 390, height: 844 },
   { width: 430, height: 932 },
   { width: 768, height: 1024 },
+  { width: 820, height: 900 },
+  { width: 821, height: 900 },
   { width: 1024, height: 768 },
   { width: 1280, height: 800 },
   { width: 1440, height: 900 },
@@ -85,6 +87,29 @@ for (const pageSpec of locales) {
     await page.goto(pageSpec.path);
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations).toEqual([]);
+  });
+
+  test(`${pageSpec.locale} visual regression baselines`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(pageSpec.path);
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page).toHaveScreenshot(`${pageSpec.locale}-390x844.png`, {
+      fullPage: true,
+      animations: 'disabled',
+      caret: 'hide',
+      maxDiffPixelRatio: 0.01,
+      threshold: 0.15,
+    });
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(page).toHaveScreenshot(`${pageSpec.locale}-1440x900.png`, {
+      fullPage: true,
+      animations: 'disabled',
+      caret: 'hide',
+      maxDiffPixelRatio: 0.01,
+      threshold: 0.15,
+    });
   });
 
   test(`${pageSpec.locale} responsive smoke across required breakpoints`, async ({ page }) => {
@@ -159,6 +184,29 @@ test('mobile menu closes with Escape and returns focus to its toggle', async ({ 
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect(toggle).toBeFocused();
   await expect(page.getByRole('navigation').getByRole('link', { name: 'Projects' })).toBeHidden();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'View projects' })).toBeFocused();
+});
+
+test('mobile menu opens and closes by touch', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto('/en/');
+    const toggle = page.locator('.mobile-menu-toggle');
+    await toggle.tap();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(
+      page.getByRole('navigation').getByRole('link', { name: 'Projects' }),
+    ).toBeVisible();
+    await toggle.tap();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  } finally {
+    await context.close();
+  }
 });
 
 test('hero CTA and section navigation reach real sections', async ({ page }) => {
