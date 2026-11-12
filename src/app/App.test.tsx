@@ -82,7 +82,23 @@ describe('portfolio page', () => {
         'false',
       );
       expect(document.querySelectorAll('a[href="#"]')).toHaveLength(0);
-      expect(screen.queryByRole('link', { name: /github|linkedin/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /GitHub profile|Profil GitHub/i })).toHaveAttribute(
+        'target',
+        '_blank',
+      );
+      expect(
+        screen.getByRole('link', { name: /LinkedIn profile|Profil LinkedIn/i }),
+      ).toHaveAttribute('rel', 'noopener noreferrer');
+      expect(
+        screen.queryByRole('link', { name: /e-mail|email|instagram|discord/i }),
+      ).not.toBeInTheDocument();
+      expect(screen.getAllByRole('article')).toHaveLength(3);
+      expect(
+        screen.getByRole('heading', {
+          level: 2,
+          name: locale === 'en' ? 'After hours' : 'Po godzinach',
+        }),
+      ).toBeInTheDocument();
 
       const scene = document.querySelector('.hero-scene');
       expect(scene).toHaveAttribute('aria-hidden', 'true');

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { getPageContent, isLocale, localeFromPath, pageContent, routeForLocale } from './index';
-import { validateExternalUrl, validateLocaleContent, validateProject } from '../content/profile';
+import { projects } from '../content/projects';
+import {
+  validateExternalUrl,
+  validateLocaleContent,
+  validateProject,
+  validateProjectManifest,
+} from '../content/profile';
 import type { Project } from '../content/profile';
 
 describe('locale contract', () => {
@@ -18,6 +24,12 @@ describe('locale contract', () => {
     expect(validateLocaleContent(pageContent)).toEqual([]);
     expect(getPageContent('en').role).toBe('Junior Software Developer');
     expect(getPageContent('pl').role).toBe('Junior Software Developer');
+    expect(getPageContent('en').aboutDescription).toMatch(/event-driven/);
+    expect(getPageContent('pl').afterHoursItems.map((item) => item.id)).toEqual([
+      'chess',
+      'fantasy',
+      'gaming',
+    ]);
     expect(
       validateLocaleContent({ en: pageContent.en, pl: { ...pageContent.pl, introduction: ' ' } }),
     ).toContain('Missing introduction for locale: pl');
@@ -37,22 +49,41 @@ describe('future content links', () => {
     expect(validateExternalUrl('not a URL')).toBe(false);
   });
 
-  it('validates future project content without publishing project cards now', () => {
-    const project: Project = {
-      slug: 'sample-project',
-      name: 'Sample Project',
-      summary: 'A short project summary.',
-      problem: 'A clearly stated problem.',
-      solution: 'A concise solution description.',
-      role: 'Contributor',
-      technologies: ['TypeScript'],
-      repositoryUrl: 'https://github.com/owner/repository',
-      asset: '/assets/project-preview.webp',
-      publicationStatus: 'draft',
-    };
-    expect(validateProject(project)).toEqual([]);
-    expect(validateProject({ ...project, demoUrl: 'https://placeholder.example' })).toContain(
+  it('validates exactly three published projects with matching English and Polish slugs', () => {
+    expect(projects.map((project) => project.slug)).toEqual([
+      'fraud-detection-platform',
+      'stockrescue-ai',
+      'chess-project',
+    ]);
+    expect(validateProjectManifest(projects)).toEqual([]);
+  });
+
+  it('rejects a duplicate slug and a missing project translation', () => {
+    expect(validateProjectManifest([projects[0], projects[0], projects[2]])).toContain(
+      'Project slugs must be unique.',
+    );
+    const missingPolish = {
+      ...projects[0],
+      content: { en: projects[0].content.en },
+    } as unknown as Project;
+    expect(validateProject(missingPolish)).toContain(
+      'Missing project translation pl: fraud-detection-platform',
+    );
+  });
+
+  it('rejects invalid demo URLs and excluded project copy', () => {
+    expect(validateProject({ ...projects[0], demoUrl: 'https://placeholder.example' })).toContain(
       'Project demo URL is invalid.',
+    );
+    const excludedCopy = {
+      ...projects[0],
+      content: {
+        ...projects[0].content,
+        en: { ...projects[0].content.en, summary: 'HopOn Netherlands works with food delivery.' },
+      },
+    };
+    expect(validateProject(excludedCopy)).toContain(
+      'Excluded project name found in en: fraud-detection-platform',
     );
   });
 });

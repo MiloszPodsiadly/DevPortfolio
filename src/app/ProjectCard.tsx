@@ -1,23 +1,32 @@
 import type { ReactNode } from 'react';
 import type { Project } from '../content/profile';
-
-export type ProjectCardData = Pick<Project, 'slug' | 'name' | 'summary' | 'technologies'> &
-  Partial<Pick<Project, 'repositoryUrl' | 'demoUrl'>>;
+import type { Locale } from '../locales';
 
 interface ProjectCardProps {
-  project: ProjectCardData;
+  project: Project;
+  locale: Locale;
   repositoryLabel: string;
   demoLabel: string;
+  problemLabel: string;
+  solutionLabel: string;
+  roleLabel: string;
+  technologyListLabel: string;
   illustration?: ReactNode;
 }
 
 export function ProjectCard({
   project,
+  locale,
   repositoryLabel,
   demoLabel,
+  problemLabel,
+  solutionLabel,
+  roleLabel,
+  technologyListLabel,
   illustration,
 }: ProjectCardProps) {
   const headingId = `project-card-${project.slug}`;
+  const content = project.content[locale];
 
   return (
     <article className="project-card" aria-labelledby={headingId}>
@@ -25,31 +34,52 @@ export function ProjectCard({
         <div className="project-card-art" aria-hidden="true">
           {illustration}
         </div>
-      ) : null}
+      ) : (
+        <div className="project-card-art" aria-hidden="true">
+          <img src={project.asset} alt="" width={720} height={320} />
+        </div>
+      )}
       <div className="project-card-content">
-        <h3 id={headingId}>{project.name}</h3>
-        <p>{project.summary}</p>
-        {project.technologies.length > 0 ? (
-          <ul className="technology-list" aria-label={`${project.name} technologies`}>
-            {project.technologies.map((technology) => (
-              <li key={technology}>{technology}</li>
-            ))}
-          </ul>
-        ) : null}
-        {project.repositoryUrl || project.demoUrl ? (
-          <div className="project-card-actions">
-            {project.repositoryUrl ? (
-              <a href={project.repositoryUrl} aria-label={`${repositoryLabel} — ${project.name}`}>
-                {repositoryLabel}
-              </a>
-            ) : null}
-            {project.demoUrl ? (
-              <a href={project.demoUrl} aria-label={`${demoLabel} — ${project.name}`}>
-                {demoLabel}
-              </a>
-            ) : null}
+        <h3 id={headingId}>{content.name}</h3>
+        <p className="project-summary">{content.summary}</p>
+        <dl className="project-details">
+          <div>
+            <dt>{problemLabel}</dt>
+            <dd>{content.problem}</dd>
           </div>
-        ) : null}
+          <div>
+            <dt>{solutionLabel}</dt>
+            <dd>{content.solution}</dd>
+          </div>
+        </dl>
+        <p className="project-role">
+          <span>{roleLabel}</span> {content.role}
+        </p>
+        <ul className="technology-list" aria-label={`${content.name}: ${technologyListLabel}`}>
+          {project.technologies.map((technology) => (
+            <li key={technology}>{technology}</li>
+          ))}
+        </ul>
+        <div className="project-card-actions">
+          <a
+            href={project.repositoryUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${repositoryLabel} — ${content.name}`}
+          >
+            {repositoryLabel}
+          </a>
+          {project.demoUrl ? (
+            <a
+              href={project.demoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${demoLabel} — ${content.name}`}
+            >
+              {demoLabel}
+            </a>
+          ) : null}
+        </div>
       </div>
     </article>
   );
