@@ -10,8 +10,12 @@ async function writeValidFixture(directory, siteOrigin, portraitAvailable = fals
   await mkdir(join(directory, 'en'), { recursive: true });
   await mkdir(join(directory, 'pl'), { recursive: true });
   await mkdir(join(directory, 'assets'), { recursive: true });
+  await mkdir(join(directory, 'assets', 'projects'), { recursive: true });
   await writeFile(join(directory, 'assets', 'client-abcdef12.js'), '');
   await writeFile(join(directory, 'assets', 'site-abcdef12.css'), '');
+  for (const artwork of ['fraud-signals.svg', 'stock-rescue.svg', 'chess-piece.svg']) {
+    await writeFile(join(directory, 'assets', 'projects', artwork), '<svg></svg>');
+  }
   if (portraitAvailable) {
     await mkdir(join(directory, 'assets', 'portraits'), { recursive: true });
     await writeFile(join(directory, 'assets', 'portraits', 'hero-480.webp'), '480');
@@ -41,7 +45,27 @@ async function writeValidFixture(directory, siteOrigin, portraitAvailable = fals
     const portrait = portraitAvailable
       ? '<img class="hero-portrait" src="/assets/portraits/hero-960.webp" srcset="/assets/portraits/hero-480.webp 480w, /assets/portraits/hero-960.webp 960w" alt="Portrait">'
       : '';
-    const html = `<html lang="${locale}"><head><title>Junior Software Developer</title><meta name="theme-color" content="#070D20"><meta name="description" content="Portfolio introduction"><link rel="stylesheet" href="/assets/site-abcdef12.css">${seo}<script type="module" src="/assets/client-abcdef12.js"></script></head><body><div id="root" data-portrait-available="${portraitAvailable}">${portrait}<a href="#main-content">Skip</a><nav><a href="/en/">English</a><a href="/pl/">Polski</a></nav><main id="main-content"><h1>Junior Software Developer</h1><p>${introduction}</p></main></div></body></html>`;
+    const projectCards = [
+      [
+        'fraud-detection-platform',
+        'Fraud Detection Platform',
+        'fraud-signals.svg',
+        'fraud-detection-platform',
+      ],
+      ['stockrescue-ai', 'StockRescue AI', 'stock-rescue.svg', 'StockRescue'],
+      ['chess-project', 'Chess Project', 'chess-piece.svg', 'chess-project'],
+    ]
+      .map(
+        ([slug, name, artwork, repository]) =>
+          `<article class="project-card"><h3 id="project-card-${slug}">${name}</h3><img src="/assets/projects/${artwork}" alt=""><a href="https://github.com/MiloszPodsiadly/${repository}" target="_blank" rel="noopener noreferrer">Source code</a></article>`,
+      )
+      .join('');
+    const socialLinks =
+      '<a href="https://github.com/MiloszPodsiadly" target="_blank" rel="noopener noreferrer">GitHub</a><a href="https://www.linkedin.com/in/milosz-podsiadly/" target="_blank" rel="noopener noreferrer">LinkedIn</a>';
+    const about =
+      locale === 'en' ? 'About me and backend projects.' : 'O mnie i projektach backendowych.';
+    const afterHours = locale === 'en' ? 'After hours' : 'Po godzinach';
+    const html = `<html lang="${locale}"><head><title>Junior Software Developer</title><meta name="theme-color" content="#070D20"><meta name="description" content="Portfolio introduction"><link rel="stylesheet" href="/assets/site-abcdef12.css">${seo}<script type="module" src="/assets/client-abcdef12.js"></script></head><body><div id="root" data-portrait-available="${portraitAvailable}">${portrait}<a href="#main-content">Skip</a><nav><a href="/en/">English</a><a href="/pl/">Polski</a></nav><main id="main-content"><h1>Junior Software Developer</h1><p>${introduction}</p><section id="projects">${projectCards}</section><section id="about"><h2>About</h2><p>${about}</p></section><section id="technologies"><h2>Technologies</h2><p>Java</p></section><section id="after-hours"><h2>${afterHours}</h2></section><section id="social"><h2>Profiles</h2>${socialLinks}</section></main></div></body></html>`;
     await writeFile(join(directory, locale, 'index.html'), html);
   }
 }
@@ -87,7 +111,7 @@ describe('built output verification', () => {
     await writeValidFixture(fixtureDirectory, 'https://portfolio.dev');
     await expect(
       verifyOutput({ distDirectory: fixtureDirectory, siteUrl: 'https://portfolio.dev' }),
-    ).resolves.toMatchObject({ files: 6 });
+    ).resolves.toMatchObject({ files: 9 });
   });
 
   it('accepts both optimized portrait exports when the prerendered page enables the portrait', async () => {
@@ -95,7 +119,7 @@ describe('built output verification', () => {
     await writeValidFixture(fixtureDirectory, undefined, true);
 
     await expect(verifyOutput({ distDirectory: fixtureDirectory })).resolves.toMatchObject({
-      files: 8,
+      files: 11,
     });
   });
 

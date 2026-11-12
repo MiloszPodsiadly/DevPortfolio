@@ -5,7 +5,7 @@ const locales = [
   {
     locale: 'en',
     path: '/en/',
-    introduction: 'A personal portfolio in progress',
+    introduction: 'I build applications',
     portraitAlt: 'Portrait of Miłosz Podsiadły',
     projectsCta: 'View projects',
     menuLabel: 'Open menu',
@@ -13,7 +13,7 @@ const locales = [
   {
     locale: 'pl',
     path: '/pl/',
-    introduction: 'Portfolio w budowie',
+    introduction: 'Tworzę aplikacje',
     portraitAlt: 'Portret Miłosza Podsiadłego',
     projectsCta: 'Zobacz projekty',
     menuLabel: 'Otwórz menu',
@@ -61,7 +61,7 @@ for (const pageSpec of locales) {
     await expect
       .poll(() => portrait.evaluate((image) => (image as HTMLImageElement).naturalWidth))
       .toBeGreaterThan(0);
-    await expect(page.locator('.project-card')).toHaveCount(0);
+    await expect(page.locator('.project-card')).toHaveCount(3);
     await expect(page.getByRole('link', { name: pageSpec.projectsCta })).toHaveAttribute(
       'href',
       '#projects',
@@ -257,10 +257,21 @@ test('both localized documents remain useful with JavaScript disabled', async ({
       await expect(page.locator('.intro-copy')).toContainText(pageSpec.introduction);
       await expect(page.getByRole('img', { name: pageSpec.portraitAlt })).toBeVisible();
       await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(6);
+      await expect(page.locator('.project-card')).toHaveCount(3);
+      await expect(page.locator('#about')).toBeVisible();
+      await expect(page.locator('#technologies')).toBeVisible();
+      await expect(page.locator('#after-hours')).toBeVisible();
+      await expect(page.locator('#social').getByRole('link')).toHaveCount(2);
+      await expect(
+        page.locator('.project-card a[target="_blank"][rel="noopener noreferrer"]'),
+      ).toHaveCount(3);
       await expect(page.getByRole('link', { name: pageSpec.projectsCta })).toHaveAttribute(
         'href',
         '#projects',
       );
+      const projectsLabel = pageSpec.locale === 'en' ? 'Projects' : 'Projekty';
+      await page.getByRole('navigation').getByRole('link', { name: projectsLabel }).click();
+      await expect(page).toHaveURL(new RegExp(`/${pageSpec.locale}/#projects$`));
       await page.close();
     }
   } finally {

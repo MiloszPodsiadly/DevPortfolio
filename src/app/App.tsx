@@ -1,5 +1,9 @@
 import { useRef, useState, type KeyboardEvent, type MouseEvent } from 'react';
+import { projects } from '../content/projects';
+import { socialLinks } from '../content/socials';
+import { technologyGroups } from '../content/skills';
 import { getPageContent, routeForLocale, type Locale } from '../locales';
+import { ProjectCard } from './ProjectCard';
 import { SceneArt } from './scene/SceneArt';
 
 interface AppProps {
@@ -167,6 +171,21 @@ export function App({ locale, portraitAvailable = false }: AppProps) {
               <h2 id="projects-heading">{content.projectsTitle}</h2>
               <p>{content.projectsDescription}</p>
             </div>
+            <div className="project-grid">
+              {projects.map((project) => (
+                <ProjectCard
+                  key={project.slug}
+                  project={project}
+                  locale={locale}
+                  repositoryLabel={content.repositoryLinkLabel}
+                  demoLabel={content.demoLinkLabel}
+                  problemLabel={content.projectProblemLabel}
+                  solutionLabel={content.projectSolutionLabel}
+                  roleLabel={content.projectRoleLabel}
+                  technologyListLabel={content.projectTechnologiesLabel}
+                />
+              ))}
+            </div>
           </div>
         </section>
 
@@ -180,7 +199,7 @@ export function App({ locale, portraitAvailable = false }: AppProps) {
             >
               <p className="eyebrow">{content.aboutEyebrow}</p>
               <h2 id="about-heading">{content.aboutTitle}</h2>
-              <p>{content.introduction}</p>
+              <p>{content.aboutDescription}</p>
             </section>
             <section
               className="overview-panel"
@@ -191,24 +210,82 @@ export function App({ locale, portraitAvailable = false }: AppProps) {
               <p className="eyebrow">{content.technologiesEyebrow}</p>
               <h2 id="technologies-heading">{content.technologiesTitle}</h2>
               <p>{content.technologiesDescription}</p>
-              <ul className="technology-list" aria-label={content.siteTechnologiesLabel}>
-                {content.siteTechnologies.map((technology) => (
-                  <li key={technology}>{technology}</li>
+              <div className="technology-groups">
+                {technologyGroups.map((group) => (
+                  <section className="technology-group" key={group.id}>
+                    <h3>{content.technologyGroupLabels[group.id]}</h3>
+                    <ul className="technology-list">
+                      {group.technologies.map((technology) => (
+                        <li key={technology}>{technology}</li>
+                      ))}
+                    </ul>
+                  </section>
                 ))}
-              </ul>
-            </section>
-            <section
-              className="overview-panel"
-              id="social"
-              tabIndex={-1}
-              aria-labelledby="social-heading"
-            >
-              <p className="eyebrow">{content.socialEyebrow}</p>
-              <h2 id="social-heading">{content.socialTitle}</h2>
-              <p>{content.socialDescription}</p>
+              </div>
+              <p className="portfolio-stack">
+                <span>{content.portfolioStackLabel}:</span> {content.siteTechnologies.join(' · ')}
+              </p>
             </section>
           </div>
         </div>
+
+        <section
+          className="section after-hours-section"
+          id="after-hours"
+          aria-labelledby="after-hours-heading"
+        >
+          <div className="content-container">
+            <div className="section-heading">
+              <p className="eyebrow">{content.afterHoursEyebrow}</p>
+              <h2 id="after-hours-heading">{content.afterHoursTitle}</h2>
+              <p>{content.afterHoursDescription}</p>
+            </div>
+            <ul className="interest-grid">
+              {content.afterHoursItems.map((item) => (
+                <li className="interest-card" key={item.id}>
+                  <span className="interest-mark" aria-hidden="true">
+                    {item.id === 'chess' ? '♞' : item.id === 'fantasy' ? '☾' : '✦'}
+                  </span>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section
+          className="section social-section"
+          id="social"
+          tabIndex={-1}
+          aria-labelledby="social-heading"
+        >
+          <div className="content-container">
+            <div className="section-heading">
+              <p className="eyebrow">{content.socialEyebrow}</p>
+              <h2 id="social-heading">{content.socialTitle}</h2>
+              <p>{content.socialDescription}</p>
+            </div>
+            <ul className="social-links">
+              {socialLinks.map((link) => {
+                const label = content.socialLinkLabels[link.id];
+                return (
+                  <li key={link.id}>
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${label} — ${content.name}`}
+                    >
+                      {label}
+                      <span aria-hidden="true"> ↗</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
       </main>
 
       <footer className="site-footer content-container">

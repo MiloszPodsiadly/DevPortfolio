@@ -63,6 +63,16 @@ function checkLinks(html, filename, filesByRelativePath) {
       );
     }
   }
+  const newTabAnchors = [...html.matchAll(/<a\b[^>]*\btarget=["']_blank["'][^>]*>/gi)].map(
+    (match) => match[0],
+  );
+  for (const anchor of newTabAnchors) {
+    const rel = attributeValues(anchor, 'rel')[0]?.split(/\s+/) ?? [];
+    assert.ok(
+      rel.includes('noopener') && rel.includes('noreferrer'),
+      `${filename} has a new-tab link without noopener noreferrer.`,
+    );
+  }
 }
 
 export async function verifyOutput({
@@ -143,6 +153,51 @@ export async function verifyOutput({
       htmlText(html).length > 80,
       `${filename} does not contain meaningful prerendered content.`,
     );
+    const expectedProjectSlugs = ['fraud-detection-platform', 'stockrescue-ai', 'chess-project'];
+    const renderedProjectSlugs = [...html.matchAll(/\bid=["']project-card-([a-z0-9-]+)["']/gi)].map(
+      (match) => match[1],
+    );
+    assert.deepEqual(
+      renderedProjectSlugs,
+      expectedProjectSlugs,
+      `${filename} must contain the same three project cards in the required order.`,
+    );
+    for (const section of ['projects', 'about', 'technologies', 'after-hours', 'social']) {
+      assert.ok(
+        attributeValues(html, 'id').includes(section),
+        `${filename} is missing #${section}.`,
+      );
+    }
+    assert.match(htmlText(html), locale === 'en' ? /After hours/ : /Po godzinach/);
+    for (const repository of [
+      'https://github.com/MiloszPodsiadly/fraud-detection-platform',
+      'https://github.com/MiloszPodsiadly/StockRescue',
+      'https://github.com/MiloszPodsiadly/chess-project',
+    ]) {
+      assert.equal(
+        attributeValues(html, 'href').filter((href) => href === repository).length,
+        1,
+        `${filename} must include exactly one source link for ${repository}.`,
+      );
+    }
+    assert.ok(
+      attributeValues(html, 'href').includes('https://github.com/MiloszPodsiadly'),
+      `${filename} is missing the GitHub profile link.`,
+    );
+    assert.ok(
+      attributeValues(html, 'href').includes('https://www.linkedin.com/in/milosz-podsiadly/'),
+      `${filename} is missing the owner-approved LinkedIn link.`,
+    );
+    const newTabLinks = [...html.matchAll(/<a\b[^>]*\btarget=["']_blank["'][^>]*>/gi)];
+    assert.equal(
+      newTabLinks.length,
+      5,
+      `${filename} must render three repository and two profile links.`,
+    );
+    assert.ok(
+      !attributeValues(html, 'href').some((href) => href.startsWith('mailto:')),
+      `${filename} contains an unapproved email link.`,
+    );
     assert.doesNotMatch(
       html,
       /HopOn Netherlands/i,
@@ -180,6 +235,21 @@ export async function verifyOutput({
       );
     }
     checkLinks(html, filename, filePaths);
+
+    const projectArtworkSources = attributeValues(html, 'src').filter((src) =>
+      src.startsWith('/assets/projects/'),
+    );
+    assert.equal(
+      projectArtworkSources.length,
+      3,
+      `${filename} must include three local project illustrations.`,
+    );
+    for (const source of projectArtworkSources) {
+      assert.ok(
+        filePaths.has(source.slice(1)),
+        `${filename} references missing project artwork ${source}.`,
+      );
+    }
 
     const scriptSources = attributeValues(html, 'src');
     assert.ok(
