@@ -3,19 +3,15 @@ import { basename, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build as viteBuild } from 'vite';
 import { getPortraitAvailability } from './portrait-assets.mjs';
+import { escapeHtml } from '../src/lib/html.mjs';
+import { validateSiteOrigin } from '../src/lib/site-url.mjs';
 
 const root = resolve(import.meta.dirname, '..');
-const distDirectory = join(root, 'dist');
+const distDirectory = resolve(process.env.PORTFOLIO_DIST_DIR ?? join(root, 'dist'));
 const clientEntry = join(root, 'src', 'entry-client.tsx');
 const serverEntry = join(root, 'src', 'entry-server.tsx');
+const siteOrigin = validateSiteOrigin(process.env.SITE_URL);
 const portraitAvailable = await getPortraitAvailability(join(root, 'public'));
-
-function escapeHtml(value) {
-  return value.replace(/[&<>"']/g, (character) => {
-    const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-    return entities[character];
-  });
-}
 
 function stylesheetLinks(assets) {
   return (assets.css ?? [])
@@ -23,10 +19,35 @@ function stylesheetLinks(assets) {
     .join('\n');
 }
 
+function escapeXml(value) {
+  return value.replace(/[&<>"']/g, (character) => {
+    const entities = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&apos;',
+    };
+    return entities[character];
+  });
+}
+
+function sitemapXml(siteOrigin) {
+  const entries = ['en', 'pl']
+    .map((locale) => `  <url>\n    <loc>${escapeXml(`${siteOrigin}/${locale}/`)}</loc>\n  </url>`)
+    .join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>\n`;
+}
+
+function robotsTxt(siteOrigin) {
+  const lines = ['User-agent: *', 'Allow: /'];
+  if (siteOrigin) lines.push(`Sitemap: ${siteOrigin}/sitemap.xml`);
+  return `${lines.join('\n')}\n`;
+}
+
 function pageShell(locale, renderedPage, assets, siteOrigin, hasPortrait) {
-  const title = escapeHtml(renderedPage.page.title);
-  const description = escapeHtml(renderedPage.page.description);
   const styles = stylesheetLinks(assets);
+  const robots = siteOrigin ? '' : '    <meta name="robots" content="noindex, nofollow" />\n';
   const canonical = siteOrigin
     ? [
         `    <link rel="canonical" href="${siteOrigin}/${locale}/" />`,
@@ -44,8 +65,11 @@ function pageShell(locale, renderedPage, assets, siteOrigin, hasPortrait) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#070D20" />
-    <title>${title}</title>
-    <meta name="description" content="${description}" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+${robots}${renderedPage.seoHtml}
+${renderedPage.socialHtml}
+${renderedPage.structuredDataHtml}
 ${canonical ? `${canonical}\n` : ''}${styles ? `${styles}\n` : ''}    <script type="module" crossorigin src="/${escapeHtml(assets.file)}"></script>
   </head>
   <body>
@@ -111,9 +135,8 @@ try {
     'utf8',
   );
 
-  const siteOrigin = serverModule.validateSiteOrigin(process.env.SITE_URL);
   for (const locale of ['en', 'pl']) {
-    const renderedPage = serverModule.render(locale, portraitAvailable);
+    const renderedPage = serverModule.render(locale, portraitAvailable, siteOrigin);
     const output = join(distDirectory, locale, 'index.html');
     await import('node:fs/promises').then(({ mkdir }) =>
       mkdir(join(distDirectory, locale), { recursive: true }),
@@ -123,6 +146,14 @@ try {
       pageShell(locale, renderedPage, clientAssets, siteOrigin, portraitAvailable),
       'utf8',
     );
+  }
+
+  await writeFile(join(distDirectory, 'robots.txt'), robotsTxt(siteOrigin), 'utf8');
+  const sitemapPath = join(distDirectory, 'sitemap.xml');
+  if (siteOrigin) {
+    await writeFile(sitemapPath, sitemapXml(siteOrigin), 'utf8');
+  } else {
+    await rm(sitemapPath, { force: true });
   }
 
   await rm(join(distDirectory, '.vite'), { recursive: true, force: true });

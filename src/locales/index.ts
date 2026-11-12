@@ -56,8 +56,9 @@ export interface PageContent {
 
 export const pageContent: Record<Locale, PageContent> = {
   en: {
-    title: 'Junior Software Developer — Miłosz Podsiadły',
-    description: 'A simple introduction to Miłosz Podsiadły and this personal portfolio.',
+    title: 'Miłosz Podsiadły — Junior Software Developer',
+    description:
+      'Personal portfolio of Miłosz Podsiadły, with projects in backend development, event-driven systems, inventory management, and chess.',
     eyebrow: 'Personal portfolio',
     name: 'Miłosz Podsiadły',
     role: 'Junior Software Developer',
@@ -127,8 +128,9 @@ export const pageContent: Record<Locale, PageContent> = {
     polishLabel: 'Polski',
   },
   pl: {
-    title: 'Junior Software Developer — Miłosz Podsiadły',
-    description: 'Krótkie wprowadzenie do Miłosza Podsiadłego i jego portfolio.',
+    title: 'Portfolio Miłosza Podsiadłego — Junior Software Developer',
+    description:
+      'Portfolio Miłosza Podsiadłego z projektami z obszaru backendu, systemów zdarzeniowych, zarządzania zapasami i szachów.',
     eyebrow: 'Portfolio osobiste',
     name: 'Miłosz Podsiadły',
     role: 'Junior Software Developer',
