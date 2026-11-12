@@ -113,6 +113,40 @@ for (const pageSpec of locales) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
         width,
       );
+      if (width === 320 || width === 820) {
+        const ctaBounds = await page
+          .getByRole('link', { name: pageSpec.projectsCta })
+          .evaluate((link) => link.getBoundingClientRect().toJSON());
+        expect(ctaBounds.left).toBeGreaterThanOrEqual(0);
+        expect(ctaBounds.right).toBeLessThanOrEqual(width);
+
+        const projectCards = await page.locator('.project-card').evaluateAll((cards) =>
+          cards.map((card) => {
+            const bounds = card.getBoundingClientRect();
+            const image = card.querySelector('img');
+            const repositoryLink = card.querySelector('.project-card-actions a');
+            const linkBounds = repositoryLink?.getBoundingClientRect();
+            return {
+              hasLoadedImage: Boolean(image?.complete && image.naturalWidth > 0),
+              hasRepositoryLink: Boolean(repositoryLink),
+              contentFits: card.scrollWidth <= card.clientWidth + 1,
+              repositoryLinkFits:
+                Boolean(linkBounds) &&
+                linkBounds.left >= bounds.left - 1 &&
+                linkBounds.right <= bounds.right + 1,
+            };
+          }),
+        );
+        expect(projectCards).toHaveLength(3);
+        expect(projectCards).toEqual(
+          Array.from({ length: 3 }, () => ({
+            hasLoadedImage: true,
+            hasRepositoryLink: true,
+            contentFits: true,
+            repositoryLinkFits: true,
+          })),
+        );
+      }
       if (width === 1440 && height === 900) {
         const projectHeadingBottom = await page
           .locator('#projects h2')
@@ -244,6 +278,35 @@ test('reduced motion keeps navigation and page content available', async ({ page
   await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('Escape');
   await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('keyboard focus and hover states remain perceivable', async ({ page }) => {
+  await page.goto('/en/');
+  await page.keyboard.press('Tab');
+  const skipLink = page.getByRole('link', { name: 'Skip to main content' });
+  await expect(skipLink).toBeFocused();
+  const focusOutline = await skipLink.evaluate((link) => ({
+    style: getComputedStyle(link).outlineStyle,
+    width: getComputedStyle(link).outlineWidth,
+    color: getComputedStyle(link).outlineColor,
+  }));
+  expect(focusOutline).toEqual({
+    style: 'solid',
+    width: '3px',
+    color: 'rgb(112, 183, 255)',
+  });
+
+  const projectsCta = page.getByRole('link', { name: 'View projects' });
+  await projectsCta.hover();
+  await expect
+    .poll(() => projectsCta.evaluate((link) => getComputedStyle(link).filter))
+    .toBe('brightness(1.07)');
+
+  const profileLink = page.locator('#social .social-links a').first();
+  await profileLink.hover();
+  await expect
+    .poll(() => profileLink.evaluate((link) => getComputedStyle(link).borderTopColor))
+    .toBe('rgb(112, 183, 255)');
 });
 
 test('both localized documents remain useful with JavaScript disabled', async ({ browser }) => {
