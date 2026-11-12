@@ -1,6 +1,9 @@
 export const locales = ['en', 'pl'] as const;
 
 export type Locale = (typeof locales)[number];
+export type TechnologyGroupId = 'backend' | 'eventDriven' | 'data' | 'frontend' | 'tooling';
+export type SocialLinkId = 'github' | 'linkedin';
+export type AfterHoursItemId = 'chess' | 'fantasy' | 'gaming';
 
 export interface PageContent {
   title: string;
@@ -9,6 +12,7 @@ export interface PageContent {
   name: string;
   role: 'Junior Software Developer';
   introduction: string;
+  aboutDescription: string;
   portraitAlt: string;
   skipLink: string;
   primaryNavigation: string;
@@ -22,16 +26,27 @@ export interface PageContent {
   projectsEyebrow: string;
   projectsTitle: string;
   projectsDescription: string;
+  projectProblemLabel: string;
+  projectSolutionLabel: string;
+  projectRoleLabel: string;
+  projectTechnologiesLabel: string;
   aboutEyebrow: string;
   aboutTitle: string;
   technologiesEyebrow: string;
   technologiesTitle: string;
   technologiesDescription: string;
+  technologyGroupLabels: Record<TechnologyGroupId, string>;
+  portfolioStackLabel: string;
   siteTechnologiesLabel: string;
   siteTechnologies: string[];
+  afterHoursEyebrow: string;
+  afterHoursTitle: string;
+  afterHoursDescription: string;
+  afterHoursItems: { id: AfterHoursItemId; title: string; description: string }[];
   socialEyebrow: string;
   socialTitle: string;
   socialDescription: string;
+  socialLinkLabels: Record<SocialLinkId, string>;
   repositoryLinkLabel: string;
   demoLinkLabel: string;
   languageNavigation: string;
@@ -47,7 +62,9 @@ export const pageContent: Record<Locale, PageContent> = {
     name: 'Miłosz Podsiadły',
     role: 'Junior Software Developer',
     introduction:
-      'A personal portfolio in progress, built to share a little about my work and interests.',
+      'I build applications and keep learning about backend development. I’m especially interested in event-driven systems, architecture and testing.',
+    aboutDescription:
+      'I’m a junior software developer who enjoys building backend applications and understanding how their parts work together. Personal projects let me explore event-driven design, architecture and testing in practice. I care about clear code and steady improvements that make software easier to maintain.',
     portraitAlt: 'Portrait of Miłosz Podsiadły',
     skipLink: 'Skip to main content',
     primaryNavigation: 'Main navigation',
@@ -61,17 +78,48 @@ export const pageContent: Record<Locale, PageContent> = {
     projectsEyebrow: 'Selected work',
     projectsTitle: 'Featured projects',
     projectsDescription:
-      'A personal portfolio in progress, built to share a little about my work and interests.',
+      'A selection of personal projects, with descriptions based on their public documentation.',
+    projectProblemLabel: 'Problem space',
+    projectSolutionLabel: 'Project approach',
+    projectRoleLabel: 'Context',
+    projectTechnologiesLabel: 'Project technologies',
     aboutEyebrow: 'Profile',
-    aboutTitle: 'About',
-    technologiesEyebrow: 'Site stack',
+    aboutTitle: 'About me',
+    technologiesEyebrow: 'Project experience',
     technologiesTitle: 'Technologies',
-    technologiesDescription: 'Technologies used to build this portfolio:',
+    technologiesDescription:
+      'Tools and technologies represented in the projects shown here. This list does not imply a level or certification.',
+    technologyGroupLabels: {
+      backend: 'Backend',
+      eventDriven: 'Event-driven systems',
+      data: 'Data and persistence',
+      frontend: 'Frontend',
+      tooling: 'Tooling and testing',
+    },
+    portfolioStackLabel: 'This portfolio is built with',
     siteTechnologiesLabel: 'Portfolio technologies',
     siteTechnologies: ['React', 'TypeScript', 'Vite', 'Tailwind CSS'],
-    socialEyebrow: 'Links',
-    socialTitle: 'Social profiles',
-    socialDescription: 'Only confirmed public profile links appear here.',
+    afterHoursEyebrow: 'Beyond code',
+    afterHoursTitle: 'After hours',
+    afterHoursDescription:
+      'Away from the editor, I like activities that leave room to think, explore and unwind.',
+    afterHoursItems: [
+      { id: 'chess', title: 'Chess', description: 'A good excuse to think a few moves ahead.' },
+      {
+        id: 'fantasy',
+        title: 'Fantasy books',
+        description: 'Stories with worlds worth getting lost in.',
+      },
+      {
+        id: 'gaming',
+        title: 'Gaming',
+        description: 'A relaxed way to enjoy a different kind of challenge.',
+      },
+    ],
+    socialEyebrow: 'Contact',
+    socialTitle: 'Find me online',
+    socialDescription: 'These are the public profiles I’ve chosen to share.',
+    socialLinkLabels: { github: 'GitHub profile', linkedin: 'LinkedIn profile' },
     repositoryLinkLabel: 'Source code',
     demoLinkLabel: 'Live demo',
     languageNavigation: 'Choose a language',
@@ -84,7 +132,10 @@ export const pageContent: Record<Locale, PageContent> = {
     eyebrow: 'Portfolio osobiste',
     name: 'Miłosz Podsiadły',
     role: 'Junior Software Developer',
-    introduction: 'Portfolio w budowie, w którym opowiem o swojej pracy i zainteresowaniach.',
+    introduction:
+      'Tworzę aplikacje i rozwijam się w obszarze backendu. Szczególnie interesują mnie systemy zdarzeniowe, architektura i testowanie.',
+    aboutDescription:
+      'Jestem programistą na początku kariery i lubię budować aplikacje backendowe oraz poznawać zależności między ich częściami. W projektach własnych sprawdzam w praktyce podejścia zdarzeniowe, architekturę i testowanie. Zależy mi na czytelnym kodzie i stopniowym ulepszaniu rozwiązań, które łatwiej utrzymać.',
     portraitAlt: 'Portret Miłosza Podsiadłego',
     skipLink: 'Przejdź do treści',
     primaryNavigation: 'Nawigacja główna',
@@ -97,18 +148,48 @@ export const pageContent: Record<Locale, PageContent> = {
     projectsCta: 'Zobacz projekty',
     projectsEyebrow: 'Wybrane prace',
     projectsTitle: 'Wybrane projekty',
-    projectsDescription:
-      'Portfolio w budowie, w którym opowiem o swojej pracy i zainteresowaniach.',
+    projectsDescription: 'Projekty własne opisane na podstawie ich publicznej dokumentacji.',
+    projectProblemLabel: 'Obszar problemu',
+    projectSolutionLabel: 'Podejście projektu',
+    projectRoleLabel: 'Kontekst',
+    projectTechnologiesLabel: 'Technologie projektu',
     aboutEyebrow: 'Profil',
     aboutTitle: 'O mnie',
-    technologiesEyebrow: 'Stack strony',
+    technologiesEyebrow: 'Doświadczenia projektowe',
     technologiesTitle: 'Technologie',
-    technologiesDescription: 'Technologie użyte do zbudowania tego portfolio:',
+    technologiesDescription:
+      'Narzędzia i technologie obecne w pokazanych projektach. Lista nie określa poziomu umiejętności ani certyfikatów.',
+    technologyGroupLabels: {
+      backend: 'Backend',
+      eventDriven: 'Systemy zdarzeniowe',
+      data: 'Dane i persystencja',
+      frontend: 'Frontend',
+      tooling: 'Narzędzia i testowanie',
+    },
+    portfolioStackLabel: 'To portfolio powstało z użyciem',
     siteTechnologiesLabel: 'Technologie portfolio',
     siteTechnologies: ['React', 'TypeScript', 'Vite', 'Tailwind CSS'],
-    socialEyebrow: 'Linki',
-    socialTitle: 'Profile społecznościowe',
-    socialDescription: 'Widoczne są tu tylko potwierdzone linki do publicznych profili.',
+    afterHoursEyebrow: 'Poza kodem',
+    afterHoursTitle: 'Po godzinach',
+    afterHoursDescription:
+      'Poza edytorem lubię zajęcia, które dają przestrzeń do myślenia, odkrywania i odpoczynku.',
+    afterHoursItems: [
+      {
+        id: 'chess',
+        title: 'Szachy',
+        description: 'Dobry powód, by planować kilka ruchów naprzód.',
+      },
+      {
+        id: 'fantasy',
+        title: 'Fantastyka',
+        description: 'Historie i światy, w których można się zatracić.',
+      },
+      { id: 'gaming', title: 'Gry', description: 'Spokojny sposób na inny rodzaj wyzwania.' },
+    ],
+    socialEyebrow: 'Kontakt',
+    socialTitle: 'Znajdź mnie online',
+    socialDescription: 'Udostępniam tutaj wybrane publiczne profile.',
+    socialLinkLabels: { github: 'Profil GitHub', linkedin: 'Profil LinkedIn' },
     repositoryLinkLabel: 'Kod źródłowy',
     demoLinkLabel: 'Demo na żywo',
     languageNavigation: 'Wybierz język',

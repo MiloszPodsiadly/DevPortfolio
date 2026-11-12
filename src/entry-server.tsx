@@ -1,10 +1,18 @@
 import { renderToString } from 'react-dom/server';
 import { App } from './app/App';
-import { validateLocaleContent } from './content/profile';
+import { validateLocaleContent, validateProjectManifest } from './content/profile';
+import { projects } from './content/projects';
+import { validateTechnologyGroups } from './content/skills';
+import { validateSocialLinks } from './content/socials';
 import { getPageContent, pageContent, type Locale } from './locales';
 export { validateSiteOrigin } from './lib/site-url.mjs';
 
-const contentErrors = validateLocaleContent(pageContent);
+const contentErrors = [
+  ...validateLocaleContent(pageContent),
+  ...validateProjectManifest(projects),
+  ...validateTechnologyGroups(),
+  ...validateSocialLinks(),
+];
 if (contentErrors.length > 0) {
   throw new Error(`Invalid locale content: ${contentErrors.join('; ')}`);
 }
