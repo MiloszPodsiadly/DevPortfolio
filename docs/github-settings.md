@@ -27,15 +27,18 @@ The E2E job uses the official `mcr.microsoft.com/playwright:v1.65.0-noble` image
 
 ## PF-006 hosted HTTP smoke test
 
-Local `verify:output` checks generated files; it does not prove Cloudflare's HTTP status codes or redirects. After a real deployment and after setting `SITE_URL` to the owner-confirmed origin, run these commands and inspect the status and `Location` header:
+Local `verify:output` checks generated files; it does not prove Cloudflare's HTTP status codes or redirects. No real Pages preview URL was provided for PF-004, so hosted behavior is **NOT VERIFIED**. Once Cloudflare supplies an actual preview URL, set it and run these exact HEAD requests:
 
 ```powershell
-if (-not $env:SITE_URL) { throw 'Set SITE_URL to the confirmed HTTPS origin first.' }
+if ([string]::IsNullOrWhiteSpace($env:PAGES_PREVIEW_URL)) { throw 'Set PAGES_PREVIEW_URL to the actual Cloudflare Pages preview origin first.' }
+$preview = $env:PAGES_PREVIEW_URL.TrimEnd('/')
 
-curl.exe --silent --show-error --dump-header - --output NUL "$env:SITE_URL/"
-curl.exe --silent --show-error --dump-header - --output NUL "$env:SITE_URL/en/"
-curl.exe --silent --show-error --dump-header - --output NUL "$env:SITE_URL/pl/"
-curl.exe --silent --show-error --dump-header - --output NUL "$env:SITE_URL/random-missing-route"
+curl.exe -I "$preview/"
+curl.exe -I "$preview/en/"
+curl.exe -I "$preview/pl/"
+curl.exe -I "$preview/robots.txt"
+curl.exe -I "$preview/sitemap.xml"
+curl.exe -I "$preview/random-missing-route"
 ```
 
-Expected: `/` returns `302` with `Location: /en/`; `/en/` and `/pl/` return `200`; an unknown route returns `404`, never a `200` SPA fallback. These hosted checks remain deferred until PF-006 and were not verified by local preview.
+Expected: `/` returns `302` with `Location: /en/`; `/en/`, `/pl/`, and `/robots.txt` return `200`; an unknown route returns `404`, never a `200` SPA fallback. `/sitemap.xml` returns `200` only when that preview build used its actual origin as `SITE_URL`; otherwise it should be absent and `robots.txt` should not contain a `Sitemap:` directive. These hosted checks remain deferred until a real preview exists and were not verified by local output checks.

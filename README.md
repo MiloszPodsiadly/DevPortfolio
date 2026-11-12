@@ -35,6 +35,8 @@ The local development shell is available at the Vite URL printed in the terminal
 | `npm run verify:output`        | Fail if the built static output breaks its contracts.                                      |
 | `npm run test:e2e`             | Run Playwright browser and accessibility checks against the built preview.                 |
 | `npm run test:portrait-parity` | Check portrait loading in Vite dev and production preview, plus the no-image dev fallback. |
+| `npm run export:og`            | Re-export the 1200×630 social image from `design/og/portfolio-cover.svg`.                  |
+| `npm run export:favicon`       | Re-export the 32×32 PNG favicon from `public/favicon.svg`.                                 |
 | `npm run qa:visual`            | Build and capture four owner-review screenshots in the ignored QA directory.               |
 
 Typical local verification:
@@ -61,14 +63,14 @@ The initial HTML contains its content and links before JavaScript runs. React hy
 
 `npm run build` creates `dist/en/index.html`, `dist/pl/index.html`, `dist/404.html`, the hashed client assets, and Cloudflare Pages `_redirects`. It does not create a root SPA fallback. `public/_redirects` asks Cloudflare Pages to send `/` to `/en/` with HTTP 302; local Vite preview does not prove that hosted redirect or the hosted HTTP 404 behavior.
 
-No canonical domain has been confirmed. Builds omit canonical and hreflang tags until `SITE_URL` is supplied as an absolute HTTPS origin:
+No canonical domain has been confirmed. Without `SITE_URL`, the build marks `/en/` and `/pl/` as `noindex, nofollow`, omits canonical/hreflang links and the `sitemap.xml` file, and emits a `robots.txt` policy that allows crawlers to read the page-level `noindex`. When a confirmed HTTPS origin is set, the build emits self-canonical and reciprocal hreflang links plus a sitemap containing only `/en/` and `/pl/`; `robots.txt` points to that sitemap. The robots policy is for crawler behavior, not privacy or access control.
 
 ```powershell
 $env:SITE_URL = "https://your-confirmed-domain.example"
 npm run build
 ```
 
-The sample above is explanatory only; replace it with an owner-confirmed origin before use. Do not publish a placeholder domain. Canonical, hreflang, sitemap, and full SEO metadata remain PF-004 release work.
+The sample above is explanatory only; replace it with an owner-confirmed origin before use. Do not publish a placeholder domain. The social preview uses `public/assets/og/portfolio-cover.png`, regenerated from `design/og/portfolio-cover.svg` by `npm run export:og`; its absolute image and page URLs are emitted only for a valid `SITE_URL`. Minimal Person JSON-LD is generated from the confirmed public name, role, GitHub, and LinkedIn profile. Hosted previews remain unverified until a real public Pages URL is available. See [social preview verification](docs/social-preview.md) for the post-deployment review steps.
 
 ## Repository and deployment state
 

@@ -18,7 +18,7 @@ This project is prepared for a static Cloudflare Pages deployment. No account co
    - the build output contains no runtime server or unexpected files.
 8. Record the actual preview URL and, later, production URL only after Cloudflare provides them.
 
-`public/_redirects` contains `/ /en/ 302`. The build also emits a top-level `404.html`. Local output checks verify those files and their contents; only a hosted Pages preview can verify Cloudflare's HTTP behavior. Root redirect and hosted 404 status are **PENDING MANUAL VERIFICATION**.
+`public/_redirects` contains `/ /en/ 302`. The build also emits a top-level `404.html`. Local output checks verify those files and their contents; only a hosted Pages preview can verify Cloudflare's HTTP behavior. Root redirect and hosted 404 status are **NOT VERIFIED** because no preview URL was supplied.
 
 ## Cost and scope assumptions
 
