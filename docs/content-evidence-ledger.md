@@ -30,3 +30,7 @@ All three repository URLs were taken from those public repositories. No live dem
 - Any specific employment or proprietary-work details require separate explicit approval and supporting evidence; none are published here.
 - No email address, Instagram URL or Discord ID was supplied, so none is rendered.
 - No demo URLs were supplied and none are rendered.
+
+## PF-003 owner copy review
+
+The exact English and Polish public copy is listed in the [PF-003 owner content review](pf-003-owner-content-approval.md). Project facts and technologies remain source-verified at the revisions above; the final About and After Hours wording, and the exact rendered copy, remain `OWNER-APPROVAL-PENDING`. GitHub and LinkedIn URLs are `OWNER-APPROVED` for the URLs only, based on the owner's supplied links; this does not approve biography or employment claims. Visual review and owner approval are tracked separately in [the PF-003 visual review](pf-003-visual-review.md).

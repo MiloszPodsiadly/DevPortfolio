@@ -1,6 +1,8 @@
 # Personal Portfolio
 
-A small, static-first portfolio for **Junior Software Developer**. It prerenders English and Polish HTML at build time, then hydrates the same React tree in the browser. PF-002 adds the blue/violet visual identity, responsive hero and navigation, and reusable visual components. Verified project content and profile details belong to PF-003; final SEO belongs to PF-004.
+A small, static-first portfolio for **Junior Software Developer**. It prerenders English and Polish HTML at build time, then hydrates the same React tree in the browser. PF-002 provides the blue/violet visual identity, responsive hero and navigation. PF-003 adds three evidence-backed project cards (Fraud Detection Platform, StockRescue AI, and Chess Project), About, Technologies, After Hours, and GitHub/LinkedIn sections in both locales. StockRescue AI is identified as in development. Final SEO remains PF-004 work.
+
+Project facts and source revisions are recorded in the [content evidence ledger](docs/content-evidence-ledger.md). The [PF-003 owner review card](docs/pf-003-owner-content-approval.md) contains the exact public copy in both languages. Source verification does not mean the owner has approved the final autobiographical wording or visual presentation; those approvals remain separate release gates.
 
 The hero uses an owner-supplied portrait when the optimized WebP exports are present and falls back to the decorative SVG scene when they are absent. The original stays in the ignored `assets-source/portraits/` directory; only the 480 px and 960 px WebP exports are included in the public build. See the [portrait asset contract](docs/portrait-asset-contract.md) for the local export and visual review steps.
 
@@ -74,4 +76,4 @@ The planning files stay in the ignored `prompts/` directory and are not duplicat
 
 The GitHub Actions workflow is defined in `.github/workflows/ci.yml`. It runs separate `quality` and `e2e` jobs for pushes to `main` and pull requests targeting `main`; the E2E job uses the Playwright image version matched to the lockfile. A workflow definition is not proof that checks passed: inspect the checks for the exact PR head before merging.
 
-Branch protection, required-check settings, Cloudflare Pages configuration, preview deployment, custom domain, and production deployment are owner-managed and are not asserted by this repository. See [Cloudflare setup](docs/cloudflare-setup.md) and [GitHub settings](docs/github-settings.md) for setup and release checks. Project and privacy facts remain subject to their dedicated reviews.
+Branch protection, required-check settings, Cloudflare Pages configuration, preview deployment, custom domain, and production deployment are owner-managed and are not asserted by this repository. See [Cloudflare setup](docs/cloudflare-setup.md) and [GitHub settings](docs/github-settings.md) for setup and release checks. For changes to public content, follow the [content verification checklist](docs/content-verification.md) and retain evidence in the ledger.
