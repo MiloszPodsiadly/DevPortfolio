@@ -16,12 +16,11 @@
     "export:portrait": "node scripts/export-portrait.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "lint": "eslint .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --check . --ignore-path .gitignore",
     "typecheck": "tsc -b --pretty",
     "test": "vitest run",
     "test:e2e": "node scripts/test-e2e.mjs",
     "test:portrait-parity": "node scripts/test-portrait-parity.mjs",
-    "export:og": "node scripts/export-og.mjs",
     "export:favicon": "node scripts/export-favicon.mjs",
     "qa:visual": "npm run build && node scripts/qa-visual.mjs",
     "verify:output": "node scripts/verify-output.mjs"
