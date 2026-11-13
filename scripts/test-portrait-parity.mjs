@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createServer as createNetServer } from 'node:net';
@@ -81,8 +81,6 @@ async function assertLocalePage(browser, baseURL, locale, portraitAvailable) {
     await page.locator('#root').getAttribute('data-portrait-available'),
     String(portraitAvailable),
   );
-  assert.equal(await page.locator('.hero-scene').getAttribute('aria-hidden'), 'true');
-
   const portrait = page.locator('img.hero-portrait');
   if (portraitAvailable) {
     await portrait.waitFor({ state: 'visible' });
@@ -90,8 +88,10 @@ async function assertLocalePage(browser, baseURL, locale, portraitAvailable) {
     const imageWidth = await portrait.evaluate((image) => image.naturalWidth);
     assert.ok(imageWidth > 0, `${locale} portrait did not finish loading.`);
     assert.match(await portrait.evaluate((image) => image.currentSrc), /hero-(480|960)\.webp$/);
+    assert.equal(await page.locator('.hero-scene').count(), 0);
   } else {
     assert.equal(await portrait.count(), 0, `${locale} should render the decorative fallback.`);
+    assert.equal(await page.locator('.hero-scene').getAttribute('aria-hidden'), 'true');
   }
 
   assert.deepEqual(failedAssetResponses, []);
@@ -118,7 +118,11 @@ try {
     await assertLocalePage(browser, productionPreview.baseURL, locale, true);
   }
 
-  temporaryPublicRoot = await mkdtemp(join(tmpdir(), 'portfolio-empty-public-'));
+  temporaryPublicRoot = await mkdtemp(join(tmpdir(), 'portfolio-without-portrait-'));
+  await cp(join(root, 'public'), temporaryPublicRoot, {
+    recursive: true,
+    filter: (source) => source !== join(root, 'public', 'assets', 'portraits'),
+  });
   const fallbackDev = await startDevServer(temporaryPublicRoot);
   servers.push(fallbackDev);
   for (const locale of Object.keys(locales)) {
@@ -126,7 +130,9 @@ try {
   }
 
   console.log('Portrait parity passed in Vite dev and preview for /en/ and /pl/.');
-  console.log('The Vite dev fallback passed with an empty temporary public directory.');
+  console.log(
+    'The Vite dev fallback passed without portrait exports; other assets remain available.',
+  );
 } finally {
   await browser?.close();
   for (const server of servers.reverse()) await server.close();

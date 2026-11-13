@@ -35,7 +35,7 @@ describe('portfolio page', () => {
   });
 
   it.each(['en', 'pl'] as const)(
-    'renders the approved content and locale links for %s',
+    'renders the approved content and language links for %s',
     (locale) => {
       render(<App locale={locale} />);
       const skipLinkName = locale === 'en' ? 'Skip to main content' : 'Przejdź do treści';
@@ -47,27 +47,8 @@ describe('portfolio page', () => {
         '#main-content',
       );
 
-      const navigation = screen.getByRole('navigation');
-      const projectsLabel = locale === 'en' ? 'Projects' : 'Projekty';
-      const aboutLabel = locale === 'en' ? 'About' : 'O mnie';
-      const technologiesLabel = locale === 'en' ? 'Technologies' : 'Technologie';
-      const socialLabel = locale === 'en' ? 'Profiles' : 'Profile';
-      expect(within(navigation).getByRole('link', { name: projectsLabel })).toHaveAttribute(
-        'href',
-        '#projects',
-      );
-      expect(within(navigation).getByRole('link', { name: aboutLabel })).toHaveAttribute(
-        'href',
-        '#about',
-      );
-      expect(within(navigation).getByRole('link', { name: technologiesLabel })).toHaveAttribute(
-        'href',
-        '#technologies',
-      );
-      expect(within(navigation).getByRole('link', { name: socialLabel })).toHaveAttribute(
-        'href',
-        '#social',
-      );
+      const languageLabel = locale === 'en' ? 'Choose a language' : 'Wybierz język';
+      const navigation = screen.getByRole('navigation', { name: languageLabel });
       expect(within(navigation).getByRole('link', { name: 'English' })).toHaveAttribute(
         'href',
         '/en/',
@@ -76,11 +57,9 @@ describe('portfolio page', () => {
         'href',
         '/pl/',
       );
-      const openMenuLabel = locale === 'en' ? 'Open menu' : 'Otwórz menu';
-      expect(screen.getByRole('button', { name: openMenuLabel })).toHaveAttribute(
-        'aria-expanded',
-        'false',
-      );
+      expect(within(navigation).getAllByRole('link')).toHaveLength(2);
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+      expect(screen.queryByRole('navigation', { name: 'Main navigation' })).not.toBeInTheDocument();
       expect(document.querySelectorAll('a[href="#"]')).toHaveLength(0);
       expect(screen.getByRole('link', { name: /GitHub profile|Profil GitHub/i })).toHaveAttribute(
         'target',
@@ -92,7 +71,7 @@ describe('portfolio page', () => {
       expect(
         screen.queryByRole('link', { name: /e-mail|email|instagram|discord/i }),
       ).not.toBeInTheDocument();
-      expect(screen.getAllByRole('article')).toHaveLength(3);
+      expect(screen.getAllByRole('article')).toHaveLength(4);
       expect(
         screen.getByRole('heading', {
           level: 2,

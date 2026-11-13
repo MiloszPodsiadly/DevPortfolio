@@ -7,28 +7,32 @@ export const projects = [
       en: {
         name: 'Fraud Detection Platform',
         summary:
-          'A multi-service project exploring transaction processing, fraud-risk scoring and analyst workflows.',
-        problem:
-          'Transaction risk signals and review workflows can span several services and data paths.',
-        solution:
-          'Connects transaction ingestion, rule- and ML-supported scoring, alerts and case review through an event-driven architecture.',
-        role: 'Personal project',
+          'Real-time, event-driven fraud detection and risk intelligence platform for secure financial operations, featuring explainable risk scoring, intelligent alerts and auditable investigation workflows.',
       },
       pl: {
         name: 'Fraud Detection Platform',
         summary:
-          'Wielousługowy projekt rozwijający przetwarzanie transakcji, ocenę ryzyka nadużyć i obsługę alertów.',
-        problem:
-          'Sygnały ryzyka transakcji i proces ich analizy mogą przebiegać przez wiele usług i źródeł danych.',
-        solution:
-          'Łączy przyjmowanie transakcji, ocenę opartą na regułach i modelach ML, alerty oraz analizę spraw w architekturze zdarzeniowej.',
-        role: 'Projekt własny',
+          'Platforma wykrywania nadużyć i analizy ryzyka w czasie rzeczywistym, oparta na zdarzeniach i wspierająca bezpieczne operacje finansowe. Obejmuje wyjaśnialną ocenę ryzyka, inteligentne alerty i audytowalne procesy analizy spraw.',
       },
     },
-    technologies: ['Java', 'Spring Boot', 'Apache Kafka', 'Python', 'React'],
+    technologies: [
+      'Java',
+      'JavaScript',
+      'Python',
+      'Spring Boot',
+      'Maven',
+      'Kafka',
+      'Redis',
+      'MongoDB',
+      'React',
+      'Docker Compose',
+      'Keycloak/OIDC',
+      'Prometheus',
+      'Grafana',
+      'Testcontainers',
+    ],
     repositoryUrl: 'https://github.com/MiloszPodsiadly/fraud-detection-platform',
-    asset: '/assets/projects/fraud-signals.svg',
-    publicationStatus: 'published',
+    asset: '/assets/projects/fraud-emblem.webp',
   },
   {
     slug: 'stockrescue-ai',
@@ -36,28 +40,32 @@ export const projects = [
       en: {
         name: 'StockRescue AI',
         summary:
-          'An inventory-management project in development, aimed at helping small retail chains reduce avoidable food waste.',
-        problem:
-          'Surplus and near-expiry stock can be difficult to coordinate between store locations.',
-        solution:
-          'The project is developing shared workflows for inventory, product batches and stock movement between stores.',
-        role: 'Personal project',
+          'AI-driven inventory intelligence platform designed to help retailers reduce food waste, optimize stock allocation, and make smarter inventory decisions.',
       },
       pl: {
         name: 'StockRescue AI',
         summary:
-          'Rozwijany projekt do zarządzania zapasami, którego celem jest ograniczenie możliwego do uniknięcia marnowania żywności.',
-        problem:
-          'Nadwyżki i produkty z krótkim terminem przydatności trudno koordynować między sklepami.',
-        solution:
-          'Projekt rozwija wspólne procesy obsługi zapasów, partii produktów i przepływu towarów między sklepami.',
-        role: 'Projekt własny',
+          'Platforma inteligentnego zarządzania zapasami oparta na AI, zaprojektowana, aby pomagać sprzedawcom ograniczać marnowanie żywności, optymalizować rozmieszczenie towarów i podejmować trafniejsze decyzje dotyczące zapasów.',
       },
     },
-    technologies: ['Java', 'Spring Boot', 'Python', 'FastAPI', 'PostgreSQL', 'React', 'TypeScript'],
+    technologies: [
+      'Java',
+      'TypeScript',
+      'Python',
+      'Spring Boot',
+      'React',
+      'Tailwind CSS',
+      'Apache Kafka',
+      'PostgreSQL',
+      'Flyway',
+      'Docker Compose',
+      'Gradle',
+      'Spring Security',
+      'Testcontainers',
+      'Playwright',
+    ],
     repositoryUrl: 'https://github.com/MiloszPodsiadly/StockRescue',
-    asset: '/assets/projects/stock-rescue.svg',
-    publicationStatus: 'published',
+    asset: '/assets/projects/stock-emblem.webp',
   },
   {
     slug: 'chess-project',
@@ -65,35 +73,64 @@ export const projects = [
       en: {
         name: 'Chess Project',
         summary:
-          'A bilingual chess app for local games, Stockfish analysis and online multiplayer.',
-        problem:
-          'Players often need separate tools for local chess, engine practice and online matches.',
-        solution:
-          'Brings local play, Stockfish engine options and online rooms together in an English and Polish interface.',
-        role: 'Personal project',
+          'Where strategy meets tradition. Every move matters. Shape the game with precision.',
       },
       pl: {
         name: 'Chess Project',
         summary:
-          'Dwujęzyczna aplikacja szachowa z grą lokalną, analizą Stockfish i rozgrywkami online.',
-        problem:
-          'Do gry lokalnej, ćwiczeń z silnikiem i partii online często potrzeba osobnych narzędzi.',
-        solution:
-          'Łączy grę lokalną, tryby silnika Stockfish i pokoje online w interfejsie po polsku i angielsku.',
-        role: 'Projekt własny',
+          'Tu strategia spotyka się z tradycją. Każdy ruch ma znaczenie. Kształtuj grę z precyzją.',
       },
     },
     technologies: [
-      'Angular',
-      'TypeScript',
       'Java',
+      'TypeScript',
+      'Angular',
       'Spring Boot',
+      'Stockfish',
+      'Chess.js',
+      'WebSocket/STOMP',
       'PostgreSQL',
-      'Stockfish.js',
+      'Spring Security',
+      'Flyway',
       'Docker Compose',
+      'Gradle',
+      'Nginx',
+      'JUnit 5',
+      'Playwright',
     ],
     repositoryUrl: 'https://github.com/MiloszPodsiadly/chess-project',
-    asset: '/assets/projects/chess-piece.svg',
-    publicationStatus: 'published',
+    asset: '/assets/projects/chess-emblem.webp',
+  },
+  {
+    slug: 'library',
+    content: {
+      en: {
+        name: 'Library',
+        summary:
+          'The first project featured in my portfolio — an independently built Java backend developed while learning software engineering best practices.',
+      },
+      pl: {
+        name: 'Library',
+        summary:
+          'Pierwszy projekt w moim portfolio — samodzielnie zbudowany backend w Javie, rozwijany podczas nauki dobrych praktyk inżynierii oprogramowania.',
+      },
+    },
+    technologies: [
+      'Java',
+      'Spring Boot',
+      'Spring Data JPA',
+      'Hibernate',
+      'MySQL',
+      'Spring Security',
+      'REST API',
+      'H2 Database',
+      'Docker Compose',
+      'Gradle',
+      'JUnit',
+      'Mockito',
+      'Lombok',
+    ],
+    repositoryUrl: 'https://github.com/MiloszPodsiadly/Library',
+    asset: '/assets/projects/library-emblem.webp',
   },
 ] as const satisfies readonly Project[];

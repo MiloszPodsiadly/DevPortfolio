@@ -31,7 +31,12 @@ async function writeValidFixture(directory, siteOrigin, portraitAvailable = fals
   );
   await writeFile(join(directory, 'assets', 'client-abcdef12.js'), '');
   await writeFile(join(directory, 'assets', 'site-abcdef12.css'), '');
-  for (const artwork of ['fraud-signals.svg', 'stock-rescue.svg', 'chess-piece.svg']) {
+  for (const artwork of [
+    'fraud-signals.svg',
+    'stock-rescue.svg',
+    'chess-piece.svg',
+    'library.svg',
+  ]) {
     await writeFile(join(directory, 'assets', 'projects', artwork), '<svg></svg>');
   }
   if (portraitAvailable) {
@@ -131,6 +136,7 @@ async function writeValidFixture(directory, siteOrigin, portraitAvailable = fals
       ],
       ['stockrescue-ai', 'StockRescue AI', 'stock-rescue.svg', 'StockRescue'],
       ['chess-project', 'Chess Project', 'chess-piece.svg', 'chess-project'],
+      ['library', 'Library', 'library.svg', 'Library'],
     ]
       .map(
         ([slug, name, artwork, repository]) =>
@@ -142,7 +148,9 @@ async function writeValidFixture(directory, siteOrigin, portraitAvailable = fals
     const about =
       locale === 'en' ? 'About me and backend projects.' : 'O mnie i projektach backendowych.';
     const afterHours = locale === 'en' ? 'After hours' : 'Po godzinach';
-    const html = `<html lang="${locale}"><head><title>${title}</title><meta name="theme-color" content="#070D20"><meta name="description" content="${description}"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="/favicon.png"><link rel="stylesheet" href="/assets/site-abcdef12.css">${socialMetadata}${seo}${jsonLd}<script type="module" src="/assets/client-abcdef12.js"></script></head><body><div id="root" data-portrait-available="${portraitAvailable}">${portrait}<a href="#main-content">Skip</a><nav><a href="/en/">English</a><a href="/pl/">Polski</a></nav><main id="main-content"><h1>Junior Software Developer</h1><p>${introduction}</p><section id="projects">${projectCards}</section><section id="about"><h2>About</h2><p>${about}</p></section><section id="technologies"><h2>Technologies</h2><p>Java</p></section><section id="after-hours"><h2>${afterHours}</h2></section><section id="social"><h2>Profiles</h2>${socialLinks}</section></main></div></body></html>`;
+    const heroCta =
+      '<a href="https://github.com/MiloszPodsiadly" target="_blank" rel="noopener noreferrer">View projects</a>';
+    const html = `<html lang="${locale}"><head><title>${title}</title><meta name="theme-color" content="#070D20"><meta name="description" content="${description}"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="32x32" href="/favicon.png"><link rel="stylesheet" href="/assets/site-abcdef12.css">${socialMetadata}${seo}${jsonLd}<script type="module" src="/assets/client-abcdef12.js"></script></head><body><div id="root" data-portrait-available="${portraitAvailable}">${portrait}<a href="#main-content">Skip</a><nav><a href="/en/">English</a><a href="/pl/">Polski</a></nav><main id="main-content"><h1>Junior Software Developer</h1><p>${introduction}</p>${heroCta}<section id="projects">${projectCards}</section><section id="about"><h2>About</h2><p>${about}</p></section><section id="technologies"><h2>Technologies</h2><p>Java</p></section><section id="after-hours"><h2>${afterHours}</h2></section><section id="social"><h2>Profiles</h2>${socialLinks}</section></main></div></body></html>`;
     await writeFile(join(directory, locale, 'index.html'), html);
   }
 }
@@ -187,7 +195,7 @@ describe('built output verification', () => {
     await writeValidFixture(fixtureDirectory, 'https://portfolio.dev');
     await expect(
       verifyOutput({ distDirectory: fixtureDirectory, siteUrl: 'https://portfolio.dev' }),
-    ).resolves.toMatchObject({ files: 14, siteOrigin: 'https://portfolio.dev' });
+    ).resolves.toMatchObject({ files: 15, siteOrigin: 'https://portfolio.dev' });
   });
 
   it('rejects a social image with invalid PNG dimensions', async () => {
@@ -494,7 +502,7 @@ describe('built output verification', () => {
     await expect(
       verifyOutput({ distDirectory: fixtureDirectory, siteUrl: '' }),
     ).resolves.toMatchObject({
-      files: 15,
+      files: 16,
     });
   });
 

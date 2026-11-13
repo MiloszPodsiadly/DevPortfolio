@@ -2,6 +2,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import { App } from './app/App';
 import { isLocale, localeFromPath, type Locale } from './locales';
 import './styles/globals.css';
+import './styles/portfolio-canvas.css';
 
 const container = document.getElementById('root');
 
@@ -16,7 +17,6 @@ const locale: Locale = isLocale(prerenderedLocale)
 const portraitAvailable = container.dataset.portraitAvailable === 'true';
 
 document.documentElement.lang = locale;
-document.documentElement.classList.add('js');
 const app = <App locale={locale} portraitAvailable={portraitAvailable} />;
 
 if (container.hasChildNodes()) {

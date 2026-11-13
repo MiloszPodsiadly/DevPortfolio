@@ -1,63 +1,56 @@
-import type { ReactNode } from 'react';
 import type { Project } from '../content/profile';
 import type { Locale } from '../locales';
+import { TechnologyIcon } from './scene/TechnologyIcon';
 
 interface ProjectCardProps {
   project: Project;
   locale: Locale;
   repositoryLabel: string;
-  demoLabel: string;
-  problemLabel: string;
-  solutionLabel: string;
-  roleLabel: string;
   technologyListLabel: string;
-  illustration?: ReactNode;
+}
+
+function TechnologyLabel({ name }: { name: string }) {
+  const slash = name.indexOf('/');
+  return slash < 0 ? (
+    name
+  ) : (
+    <>
+      {name.slice(0, slash + 1)}
+      <wbr />
+      {name.slice(slash + 1)}
+    </>
+  );
 }
 
 export function ProjectCard({
   project,
   locale,
   repositoryLabel,
-  demoLabel,
-  problemLabel,
-  solutionLabel,
-  roleLabel,
   technologyListLabel,
-  illustration,
 }: ProjectCardProps) {
   const headingId = `project-card-${project.slug}`;
   const content = project.content[locale];
 
   return (
-    <article className="project-card" aria-labelledby={headingId}>
-      {illustration ? (
-        <div className="project-card-art" aria-hidden="true">
-          {illustration}
-        </div>
-      ) : (
-        <div className="project-card-art" aria-hidden="true">
-          <img src={project.asset} alt="" width={720} height={320} />
-        </div>
-      )}
+    <article className="project-card project-card-summary" aria-labelledby={headingId}>
+      <div className="project-card-art" aria-hidden="true">
+        <img src={project.asset} alt="" width={720} height={320} />
+      </div>
       <div className="project-card-content">
         <h3 id={headingId}>{content.name}</h3>
         <p className="project-summary">{content.summary}</p>
-        <dl className="project-details">
-          <div>
-            <dt>{problemLabel}</dt>
-            <dd>{content.problem}</dd>
-          </div>
-          <div>
-            <dt>{solutionLabel}</dt>
-            <dd>{content.solution}</dd>
-          </div>
-        </dl>
-        <p className="project-role">
-          <span>{roleLabel}</span> {content.role}
-        </p>
-        <ul className="technology-list" aria-label={`${content.name}: ${technologyListLabel}`}>
+        <p className="project-stack-label">{technologyListLabel}</p>
+        <ul
+          className="technology-list project-stack"
+          aria-label={`${content.name}: ${technologyListLabel}`}
+        >
           {project.technologies.map((technology) => (
-            <li key={technology}>{technology}</li>
+            <li key={technology}>
+              <TechnologyIcon name={technology} />
+              <span>
+                <TechnologyLabel name={technology} />
+              </span>
+            </li>
           ))}
         </ul>
         <div className="project-card-actions">
@@ -69,16 +62,6 @@ export function ProjectCard({
           >
             {repositoryLabel}
           </a>
-          {project.demoUrl ? (
-            <a
-              href={project.demoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${demoLabel} — ${content.name}`}
-            >
-              {demoLabel}
-            </a>
-          ) : null}
         </div>
       </div>
     </article>

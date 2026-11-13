@@ -1,0 +1,117 @@
+Technology SVGs from Devicon: https://github.com/devicons/devicon
+
+aws.svg: https://github.com/devicons/devicon/blob/master/icons/amazonwebservices/amazonwebservices-original.svg
+Git blob SHA: 39f9762a217d2cfce3b7e69f9b9add67597a2bf4
+AWS wordmark recolored white for the dark background; orange smile preserved.
+
+javascript.svg: https://github.com/devicons/devicon/blob/master/icons/javascript/javascript-original.svg
+Git blob SHA: 7975261bd47d0112fab7f5a376e1293e56a55584
+
+scala.svg: https://github.com/devicons/devicon/blob/master/icons/scala/scala-original.svg
+Git blob SHA: 6d3fd54a0761742ae6841dd05a5c1501a57a84cf
+
+java.svg: https://github.com/devicons/devicon/blob/master/icons/java/java-original.svg
+Git blob SHA: 051bf254ad782820627890ef2b0e06fbae63dc6e
+
+python.svg: https://github.com/devicons/devicon/blob/master/icons/python/python-original.svg
+Git blob SHA: e0e096a24e59fb9f1e501899389e3905c6c27cd7
+
+typescript.svg: https://github.com/devicons/devicon/blob/master/icons/typescript/typescript-original.svg
+Git blob SHA: e1db5f196597f0815d315dfacf4191bb3df75fa4
+
+spring.svg: https://github.com/devicons/devicon/blob/master/icons/spring/spring-original.svg
+Git blob SHA: 9a10e7f405fb17d3aa38b1e1a73961fba4a113df
+
+postgresql.svg: https://github.com/devicons/devicon/blob/master/icons/postgresql/postgresql-original.svg
+Git blob SHA: 4656cb79adde771d6eb3bf58647f4e82e89e083b
+
+mongodb.svg: https://github.com/devicons/devicon/blob/master/icons/mongodb/mongodb-original.svg
+Git blob SHA: a5d37072b5a00f5e77573c90c0e77db662b13e30
+
+redis.svg: https://github.com/devicons/devicon/blob/master/icons/redis/redis-original.svg
+Git blob SHA: 7aabb0dd08a6560efc2b4fe308c2b2acf25ee438
+
+react.svg: https://github.com/devicons/devicon/blob/master/icons/react/react-original.svg
+Git blob SHA: 9af92b9dd783a9e1a2f07bdc5376724c08f05ef2
+
+angular.svg: https://github.com/devicons/devicon/blob/master/icons/angular/angular-original.svg
+Git blob SHA: 3fa557ad565a4ad6543603eae0e827b8346e3721
+
+docker.svg: https://github.com/devicons/devicon/blob/master/icons/docker/docker-original.svg
+Git blob SHA: bbeaed2effdc1f6840aff73491a5faa2a585885b
+
+apachekafka.svg: https://github.com/devicons/devicon/blob/master/icons/apachekafka/apachekafka-original.svg
+Git blob SHA: 29836cf0fccc72c48645907d2fcf054273ef87e2
+
+githubactions.svg: https://github.com/devicons/devicon/blob/master/icons/githubactions/githubactions-original.svg
+Git blob SHA: 2929e024f398fda63873ff5e94ec8d3e9833948f
+
+playwright.svg: https://github.com/devicons/devicon/blob/master/icons/playwright/playwright-original.svg
+Git blob SHA: 3065efc7a2156a5ad5f705e1ddb54f5aad308f41
+
+vitest.svg: https://github.com/devicons/devicon/blob/master/icons/vitest/vitest-original.svg
+Git blob SHA: 7de21ffcfabbe1c86104ded7063fd2f93629a2f7
+
+The MIT License (MIT)
+
+Copyright (c) 2015 konpa
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+maven.svg: https://github.com/devicons/devicon/blob/master/icons/maven/maven-original.svg
+Git blob SHA: 32fa8749ff16986cf7357a7f00b73cdde709cbd3
+
+prometheus.svg: https://github.com/devicons/devicon/blob/master/icons/prometheus/prometheus-original.svg
+Git blob SHA: 4925b72d7087f8fb8eb47b523f931a2f148beb53
+
+grafana.svg: https://github.com/devicons/devicon/blob/master/icons/grafana/grafana-original.svg
+Git blob SHA: 0387019732aa7a73300adfb381d1335881326575
+
+keycloak.svg: https://github.com/simple-icons/simple-icons/blob/develop/icons/keycloak.svg
+Git blob SHA: 9a6d6f0d09639a23f3ceb6d75a94ba8fcf06c707
+
+Testcontainers SVG is a project-local container/check illustration.
+
+gradle.svg: https://github.com/devicons/devicon/blob/master/icons/gradle/gradle-original.svg
+Git blob SHA: d5330f1f0280fd1dcc3690fb176290bf49188572
+
+tailwindcss.svg: https://github.com/devicons/devicon/blob/master/icons/tailwindcss/tailwindcss-original.svg
+Git blob SHA: 83a13ff46ba0062101f0bfacf2b351298beafb39
+
+flyway.svg: https://github.com/devicons/devicon/blob/master/icons/flyway/flyway-original.svg
+Git blob SHA: a17d0d9b97801d4f6146e051d8fb4e6b73845b42
+
+springsecurity.svg: https://github.com/simple-icons/simple-icons/blob/develop/icons/springsecurity.svg
+Git blob SHA: 5416ba26869c37155b0e85ae472eb5027b8f68ef
+Spring Security uses the Simple Icons CC0 license (LICENSE-simple-icons.txt).
+
+nginx.svg: https://github.com/devicons/devicon/blob/master/icons/nginx/nginx-original.svg
+Git blob SHA: e8e8cdb10cc70602bbbe3ec4f0b7e695ddc7738a
+
+junit.svg: https://github.com/devicons/devicon/blob/master/icons/junit/junit-original.svg
+Git blob SHA: 9185cf4d1af9572fc38f0a04c0d55dc0a3ef3bc9
+
+hibernate.svg: https://github.com/devicons/devicon/blob/master/icons/hibernate/hibernate-original.svg
+Git blob SHA: 4947d08dac553d0d052a71e083b41c505289ad56
+
+mysql.svg: https://github.com/devicons/devicon/blob/master/icons/mysql/mysql-original.svg
+Git blob SHA: 207170c1103aba5d26a3de34ed0735e5f32ea619
+
+stockfish.svg, chessjs.svg, websocket.svg, h2.svg, mockito.svg and lombok.svg
+are project-local conceptual illustrations, not copied third-party brand artwork.

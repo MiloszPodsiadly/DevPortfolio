@@ -373,14 +373,19 @@ export async function verifyOutput({
       htmlText(html).length > 80,
       `${filename} does not contain meaningful prerendered content.`,
     );
-    const expectedProjectSlugs = ['fraud-detection-platform', 'stockrescue-ai', 'chess-project'];
+    const expectedProjectSlugs = [
+      'fraud-detection-platform',
+      'stockrescue-ai',
+      'chess-project',
+      'library',
+    ];
     const renderedProjectSlugs = [...html.matchAll(/\bid=["']project-card-([a-z0-9-]+)["']/gi)].map(
       (match) => match[1],
     );
     assert.deepEqual(
       renderedProjectSlugs,
       expectedProjectSlugs,
-      `${filename} must contain the same three project cards in the required order.`,
+      `${filename} must contain the same four project cards in the required order.`,
     );
     for (const section of ['projects', 'about', 'technologies', 'after-hours', 'social']) {
       assert.ok(
@@ -393,6 +398,7 @@ export async function verifyOutput({
       'https://github.com/MiloszPodsiadly/fraud-detection-platform',
       'https://github.com/MiloszPodsiadly/StockRescue',
       'https://github.com/MiloszPodsiadly/chess-project',
+      'https://github.com/MiloszPodsiadly/Library',
     ]) {
       assert.equal(
         attributeValues(html, 'href').filter((href) => href === repository).length,
@@ -411,8 +417,8 @@ export async function verifyOutput({
     const newTabLinks = [...html.matchAll(/<a\b[^>]*\btarget=["']_blank["'][^>]*>/gi)];
     assert.equal(
       newTabLinks.length,
-      5,
-      `${filename} must render three repository and two profile links.`,
+      7,
+      `${filename} must render four repository links, two social links and the GitHub hero CTA.`,
     );
     assert.ok(
       !attributeValues(html, 'href').some((href) => href.startsWith('mailto:')),
@@ -461,8 +467,8 @@ export async function verifyOutput({
     );
     assert.equal(
       projectArtworkSources.length,
-      3,
-      `${filename} must include three local project illustrations.`,
+      4,
+      `${filename} must include four local project illustrations.`,
     );
     for (const source of projectArtworkSources) {
       assert.ok(
@@ -669,7 +675,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     const result = await verifyOutput();
     console.log(`Output verified: ${result.files} files, ${result.bytes} bytes.`);
     if (!result.siteOrigin) {
-      console.log('SITE_URL is unset; canonical and hreflang tags remain a PF-004 release gate.');
+      console.log('SITE_URL is unset; pages remain noindex without canonical or hreflang tags.');
     }
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
