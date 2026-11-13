@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const locales = [
   {
@@ -8,7 +8,7 @@ const locales = [
     introduction: 'I build applications',
     portraitAlt: 'Portrait of Miłosz Podsiadły',
     projectsCta: 'View projects',
-    menuLabel: 'Open menu',
+    interestTitles: ['Games', 'Science & Fantasy', 'Technology'],
   },
   {
     locale: 'pl',
@@ -16,7 +16,7 @@ const locales = [
     introduction: 'Tworzę aplikacje',
     portraitAlt: 'Portret Miłosza Podsiadłego',
     projectsCta: 'Zobacz projekty',
-    menuLabel: 'Otwórz menu',
+    interestTitles: ['Gry', 'Nauka i fantastyka', 'Technologia'],
   },
 ] as const;
 const responsiveSizes = [
@@ -32,6 +32,29 @@ const responsiveSizes = [
   { width: 1440, height: 900 },
   { width: 1920, height: 1080 },
 ] as const;
+
+async function sceneComposition(page: Page) {
+  return page.evaluate(() => {
+    const canvas = document.querySelector('.portfolio-shell')!.getBoundingClientRect();
+    return [
+      '.hero-workspace',
+      'h1',
+      '.hero-portrait',
+      '#projects',
+      '#about',
+      '#technologies',
+      '#social',
+    ].map((selector) => {
+      const bounds = document.querySelector(selector)!.getBoundingClientRect();
+      return {
+        left: (bounds.left - canvas.left) / canvas.width,
+        top: (bounds.top - canvas.top) / canvas.height,
+        width: bounds.width / canvas.width,
+        height: bounds.height / canvas.height,
+      };
+    });
+  });
+}
 
 for (const pageSpec of locales) {
   test(`${pageSpec.locale} prerender, hydration, assets and mobile layout`, async ({ page }) => {
@@ -61,22 +84,29 @@ for (const pageSpec of locales) {
     await expect
       .poll(() => portrait.evaluate((image) => (image as HTMLImageElement).naturalWidth))
       .toBeGreaterThan(0);
-    await expect(page.locator('.project-card')).toHaveCount(3);
+    await expect(page.locator('.project-card')).toHaveCount(4);
+    await expect(page.locator('.interest-card h3')).toHaveText([...pageSpec.interestTitles]);
+    await expect(page.locator('.interest-illustration')).toHaveCount(3);
+    await expect
+      .poll(() =>
+        page
+          .locator('.interest-illustration')
+          .evaluateAll((images) =>
+            images.every(
+              (image) =>
+                (image as HTMLImageElement).complete &&
+                (image as HTMLImageElement).naturalWidth > 0,
+            ),
+          ),
+      )
+      .toBe(true);
     await expect(page.getByRole('link', { name: pageSpec.projectsCta })).toHaveAttribute(
       'href',
-      '#projects',
+      'https://github.com/MiloszPodsiadly',
     );
     await expect(page.locator('a[href="#"]')).toHaveCount(0);
-    const menuToggle = page.locator('.mobile-menu-toggle');
-    await expect(menuToggle).toBeVisible();
-    await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
-    await menuToggle.click();
-    await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(6);
-    await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
-    await page
-      .getByRole('button', { name: pageSpec.locale === 'en' ? 'Close menu' : 'Zamknij menu' })
-      .click();
-    await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.mobile-menu-toggle')).toHaveCount(0);
+    await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(2);
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('script[type="module"][src^="/assets/"]')).toHaveCount(1);
     await expect(page.locator('link[rel="stylesheet"][href^="/assets/"]')).toHaveCount(1);
@@ -101,6 +131,9 @@ for (const pageSpec of locales) {
     await page.setViewportSize({ width: 320, height: 760 });
     await page.goto(pageSpec.path);
 
+    await page.setViewportSize({ width: 1920, height: 900 });
+    const baseline = await sceneComposition(page);
+
     for (const { width, height } of responsiveSizes) {
       await page.setViewportSize({ width, height });
       await expect(page.locator('.intro-copy')).toBeVisible();
@@ -109,7 +142,22 @@ for (const pageSpec of locales) {
       await expect(page.locator('#about')).toBeVisible();
       await expect(page.locator('#technologies')).toBeVisible();
       await expect(page.locator('#social')).toBeVisible();
-      await expect(page.locator('footer')).toBeVisible();
+      await expect(page.locator('footer')).toHaveCount(0);
+      const alignedPanels = await page.evaluate(() => {
+        const panels = [
+          document.querySelector('#projects')!,
+          document.querySelector('#about')!,
+          document.querySelector('#technologies')!,
+        ].map((panel) => panel.getBoundingClientRect());
+        const first = panels[0];
+        return panels.every(
+          (panel) =>
+            Math.abs(panel.height - first.height) < 1 &&
+            Math.abs(panel.top - first.top) < 1 &&
+            Math.abs(panel.bottom - first.bottom) < 1,
+        );
+      });
+      expect(alignedPanels).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
         width,
       );
@@ -124,28 +172,54 @@ for (const pageSpec of locales) {
           cards.map((card) => {
             const bounds = card.getBoundingClientRect();
             const image = card.querySelector('img');
+            const imageBounds = image?.getBoundingClientRect();
+            const artworkBounds = card.querySelector('.project-card-art')?.getBoundingClientRect();
             const repositoryLink = card.querySelector('.project-card-actions a');
             const linkBounds = repositoryLink?.getBoundingClientRect();
             return {
               hasLoadedImage: Boolean(image?.complete && image.naturalWidth > 0),
+              illustrationFits:
+                Boolean(imageBounds && artworkBounds) &&
+                imageBounds.width <= artworkBounds.width + 1 &&
+                imageBounds.height <= artworkBounds.height + 1,
               hasRepositoryLink: Boolean(repositoryLink),
-              contentFits: card.scrollWidth <= card.clientWidth + 1,
+              contentFits:
+                card.scrollWidth <= card.clientWidth + 1 &&
+                card.scrollHeight <= card.clientHeight + 1,
               repositoryLinkFits:
                 Boolean(linkBounds) &&
                 linkBounds.left >= bounds.left - 1 &&
-                linkBounds.right <= bounds.right + 1,
+                linkBounds.right <= bounds.right + 1 &&
+                linkBounds.bottom <= bounds.bottom + 1,
             };
           }),
         );
-        expect(projectCards).toHaveLength(3);
+        expect(projectCards).toHaveLength(4);
         expect(projectCards).toEqual(
-          Array.from({ length: 3 }, () => ({
+          Array.from({ length: 4 }, () => ({
             hasLoadedImage: true,
+            illustrationFits: true,
             hasRepositoryLink: true,
             contentFits: true,
             repositoryLinkFits: true,
           })),
         );
+        const bannersFit = await page.locator('.interest-card').evaluateAll((cards) =>
+          cards.every((card) => {
+            const bounds = card.getBoundingClientRect();
+            const image = card.querySelector('.interest-illustration')!.getBoundingClientRect();
+            const copy = card.querySelector('.interest-copy')!.getBoundingClientRect();
+            return (
+              image.top >= bounds.top - 1 &&
+              image.bottom <= bounds.bottom + 1 &&
+              copy.left >= bounds.left - 1 &&
+              copy.right <= bounds.right + 1 &&
+              copy.top >= bounds.top - 1 &&
+              copy.bottom <= bounds.bottom + 1
+            );
+          }),
+        );
+        expect(bannersFit).toBe(true);
       }
       if (width === 1440 && height === 900) {
         const projectHeadingBottom = await page
@@ -154,19 +228,50 @@ for (const pageSpec of locales) {
         expect(projectHeadingBottom).toBeLessThanOrEqual(height);
       }
 
-      const navigationLinks = page.getByRole('navigation').getByRole('link');
-      if (width <= 820) {
-        const menuToggle = page.locator('.mobile-menu-toggle');
-        await menuToggle.click();
-        await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
-        await expect(navigationLinks).toHaveCount(6);
-        await page.keyboard.press('Escape');
-        await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
-      } else {
-        await expect(navigationLinks).toHaveCount(6);
-        await expect(navigationLinks.first()).toBeVisible();
+      await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(2);
+      await expect(page.getByRole('navigation').getByRole('link').first()).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(
+        height,
+      );
+      const current = await sceneComposition(page);
+      expect(current).toHaveLength(baseline.length);
+      for (let index = 0; index < baseline.length; index++) {
+        for (const key of ['left', 'top', 'width', 'height'] as const) {
+          expect(current[index][key]).toBeCloseTo(baseline[index][key], 2);
+        }
       }
     }
+  });
+  test(`${pageSpec.locale} scrolls to Library inside the project panel`, async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 900 });
+    await page.goto(pageSpec.path);
+    const grid = page.locator('.project-grid');
+    const libraryLink = page.locator('a[href="https://github.com/MiloszPodsiadly/Library"]');
+    const aboutBounds = await page.locator('#about').boundingBox();
+    await expect(libraryLink).not.toBeInViewport();
+
+    await grid.hover();
+    await page.mouse.wheel(0, 500);
+    await expect.poll(() => grid.evaluate((element) => element.scrollTop)).toBeGreaterThan(100);
+    await expect(libraryLink).toBeInViewport();
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    expect(await page.locator('#about').boundingBox()).toEqual(aboutBounds);
+
+    await grid.evaluate((element) => {
+      element.scrollTop = 0;
+    });
+    await grid.focus();
+    await page.keyboard.press('PageDown');
+    await expect(libraryLink).toBeInViewport();
+
+    for (const technology of ['AWS', 'JavaScript', 'Scala']) {
+      await expect(
+        page.locator('#technologies').getByText(technology, { exact: true }),
+      ).toBeVisible();
+    }
+    await expect(page.locator('#technologies').getByText('FastAPI', { exact: true })).toHaveCount(
+      0,
+    );
   });
 }
 
@@ -179,26 +284,16 @@ test('locale links navigate directly between the two prerendered routes', async 
   await expect(page).toHaveURL(/\/en\/$/);
 });
 
-test('mobile menu closes with Escape and returns focus to its toggle', async ({ page }) => {
+test('language switch remains usable by keyboard in the scaled scene', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/');
-  const toggle = page.locator('.mobile-menu-toggle');
-  await toggle.focus();
+  await page.getByRole('navigation').getByRole('link', { name: 'Polski' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('button', { name: 'Close menu' })).toHaveAttribute(
-    'aria-expanded',
-    'true',
-  );
-  await expect(page.getByRole('navigation').getByRole('link', { name: 'Projects' })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(toggle).toBeFocused();
-  await expect(page.getByRole('navigation').getByRole('link', { name: 'Projects' })).toBeHidden();
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('link', { name: 'View projects' })).toBeFocused();
+  await expect(page).toHaveURL(/\/pl\/$/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'pl');
 });
 
-test('mobile menu opens and closes by touch', async ({ browser }) => {
+test('language switch remains usable by touch in the scaled scene', async ({ browser }) => {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
     hasTouch: true,
@@ -206,39 +301,27 @@ test('mobile menu opens and closes by touch', async ({ browser }) => {
   try {
     const page = await context.newPage();
     await page.goto('/en/');
-    const toggle = page.locator('.mobile-menu-toggle');
-    await toggle.tap();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await expect(
-      page.getByRole('navigation').getByRole('link', { name: 'Projects' }),
-    ).toBeVisible();
-    await toggle.tap();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await page.getByRole('navigation').getByRole('link', { name: 'Polski' }).tap();
+    await expect(page).toHaveURL(/\/pl\/$/);
+    await page.getByRole('navigation').getByRole('link', { name: 'English' }).tap();
+    await expect(page).toHaveURL(/\/en\/$/);
   } finally {
     await context.close();
   }
 });
 
-test('hero CTA and section navigation reach real sections', async ({ page }) => {
+test('hero CTA opens the main GitHub profile in the scaled scene', async ({ page, context }) => {
+  await context.route('https://github.com/MiloszPodsiadly', (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<title>GitHub profile</title>' }),
+  );
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/en/');
+  const popupPromise = page.waitForEvent('popup');
   await page.getByRole('link', { name: 'View projects' }).click();
-  await expect(page).toHaveURL(/#projects$/);
-  await expect(page.locator('#projects')).toBeFocused();
-  const projectSectionTop = await page
-    .locator('#projects')
-    .evaluate((section) => section.getBoundingClientRect().top);
-  const stickyHeaderBottom = await page
-    .locator('.site-header')
-    .evaluate((header) => header.getBoundingClientRect().bottom);
-  expect(projectSectionTop).toBeGreaterThanOrEqual(stickyHeaderBottom - 1);
-
-  const toggle = page.getByRole('button', { name: 'Open menu' });
-  await toggle.click();
-  await page.getByRole('navigation').getByRole('link', { name: 'About' }).click();
-  await expect(page).toHaveURL(/#about$/);
-  await expect(page.locator('#about')).toBeFocused();
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  const popup = await popupPromise;
+  await expect(popup).toHaveURL('https://github.com/MiloszPodsiadly');
+  await popup.close();
+  await expect(page).toHaveURL(/\/en\/$/);
 });
 
 test('language switch keeps the current section anchor', async ({ page }) => {
@@ -272,12 +355,11 @@ test('reduced motion keeps navigation and page content available', async ({ page
   expect(Number.parseFloat(motionStyles.buttonTransitionDuration)).toBeLessThanOrEqual(0.00001);
   await expect(page.locator('h1')).toContainText('Junior Software Developer');
   await expect(page.getByRole('link', { name: 'View projects' })).toBeVisible();
-  const menuToggle = page.locator('.mobile-menu-toggle');
-  await expect(menuToggle).toBeVisible();
-  await menuToggle.click();
-  await expect(menuToggle).toHaveAttribute('aria-expanded', 'true');
-  await page.keyboard.press('Escape');
-  await expect(menuToggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(2);
+  const cta = page.getByRole('link', { name: 'View projects' });
+  await expect(cta).toHaveAttribute('href', 'https://github.com/MiloszPodsiadly');
+  await cta.focus();
+  await expect(cta).toBeFocused();
 });
 
 test('keyboard focus and hover states remain perceivable', async ({ page }) => {
@@ -300,13 +382,13 @@ test('keyboard focus and hover states remain perceivable', async ({ page }) => {
   await projectsCta.hover();
   await expect
     .poll(() => projectsCta.evaluate((link) => getComputedStyle(link).filter))
-    .toBe('brightness(1.07)');
+    .toBe('brightness(1.16)');
 
   const profileLink = page.locator('#social .social-links a').first();
   await profileLink.hover();
   await expect
     .poll(() => profileLink.evaluate((link) => getComputedStyle(link).borderTopColor))
-    .toBe('rgb(112, 183, 255)');
+    .toBe('rgb(167, 231, 255)');
 });
 
 test('both localized documents remain useful with JavaScript disabled', async ({ browser }) => {
@@ -319,22 +401,28 @@ test('both localized documents remain useful with JavaScript disabled', async ({
       await expect(page.locator('h1')).toContainText('Junior Software Developer');
       await expect(page.locator('.intro-copy')).toContainText(pageSpec.introduction);
       await expect(page.getByRole('img', { name: pageSpec.portraitAlt })).toBeVisible();
-      await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(6);
-      await expect(page.locator('.project-card')).toHaveCount(3);
+      await expect(page.getByRole('navigation').getByRole('link')).toHaveCount(2);
+      await expect(page.locator('.project-card')).toHaveCount(4);
       await expect(page.locator('#about')).toBeVisible();
       await expect(page.locator('#technologies')).toBeVisible();
       await expect(page.locator('#after-hours')).toBeVisible();
       await expect(page.locator('#social').getByRole('link')).toHaveCount(2);
       await expect(
         page.locator('.project-card a[target="_blank"][rel="noopener noreferrer"]'),
-      ).toHaveCount(3);
+      ).toHaveCount(4);
       await expect(page.getByRole('link', { name: pageSpec.projectsCta })).toHaveAttribute(
         'href',
-        '#projects',
+        'https://github.com/MiloszPodsiadly',
       );
-      const projectsLabel = pageSpec.locale === 'en' ? 'Projects' : 'Projekty';
-      await page.getByRole('navigation').getByRole('link', { name: projectsLabel }).click();
-      await expect(page).toHaveURL(new RegExp(`/${pageSpec.locale}/#projects$`));
+      await expect(page.getByRole('link', { name: pageSpec.projectsCta })).toHaveAttribute(
+        'target',
+        '_blank',
+      );
+      await page.locator('.project-grid').focus();
+      await page.keyboard.press('End');
+      await expect(
+        page.locator('a[href="https://github.com/MiloszPodsiadly/Library"]'),
+      ).toBeInViewport();
       await page.close();
     }
   } finally {

@@ -1,17 +1,8 @@
-import { locales, pageContent, type Locale } from '../locales';
-
-export interface SiteProfile {
-  name: string;
-  role: 'Junior Software Developer';
-  introduction: string;
-}
+import { locales, type Locale } from '../locales';
 
 export interface LocalizedProjectContent {
   name: string;
   summary: string;
-  problem: string;
-  solution: string;
-  role: string;
 }
 
 export interface Project {
@@ -19,19 +10,7 @@ export interface Project {
   content: Record<Locale, LocalizedProjectContent>;
   technologies: readonly string[];
   repositoryUrl: string;
-  demoUrl?: string;
-  demoUrlApproved?: boolean;
   asset: string;
-  publicationStatus: 'draft' | 'published';
-}
-
-export function getProfile(locale: Locale): SiteProfile {
-  const content = pageContent[locale];
-  return {
-    name: content.name,
-    role: content.role,
-    introduction: content.introduction,
-  };
 }
 
 export function validateLocaleContent(content: Record<string, unknown>): string[] {
@@ -57,28 +36,17 @@ export function validateLocaleContent(content: Record<string, unknown>): string[
       'aboutDescription',
       'portraitAlt',
       'skipLink',
-      'primaryNavigation',
-      'projectsLabel',
-      'aboutLabel',
-      'technologiesLabel',
-      'socialLabel',
-      'openMenuLabel',
-      'closeMenuLabel',
       'projectsCta',
       'projectsEyebrow',
       'projectsTitle',
       'projectsDescription',
-      'projectProblemLabel',
-      'projectSolutionLabel',
-      'projectRoleLabel',
+      'projectsScrollHint',
       'projectTechnologiesLabel',
       'aboutEyebrow',
       'aboutTitle',
       'technologiesEyebrow',
       'technologiesTitle',
       'technologiesDescription',
-      'portfolioStackLabel',
-      'siteTechnologiesLabel',
       'afterHoursEyebrow',
       'afterHoursTitle',
       'afterHoursDescription',
@@ -86,7 +54,6 @@ export function validateLocaleContent(content: Record<string, unknown>): string[
       'socialTitle',
       'socialDescription',
       'repositoryLinkLabel',
-      'demoLinkLabel',
       'languageNavigation',
       'englishLabel',
       'polishLabel',
@@ -95,24 +62,8 @@ export function validateLocaleContent(content: Record<string, unknown>): string[
         errors.push(`Missing ${key} for locale: ${locale}`);
       }
     }
-    if (
-      !Array.isArray(page.siteTechnologies) ||
-      page.siteTechnologies.length === 0 ||
-      page.siteTechnologies.some(
-        (technology) => typeof technology !== 'string' || !technology.trim(),
-      )
-    ) {
-      errors.push(`Missing site technologies for locale: ${locale}`);
-    }
     if (page.role !== 'Junior Software Developer') {
       errors.push(`Unexpected role for locale: ${locale}`);
-    }
-    const groupLabels = page.technologyGroupLabels;
-    for (const group of ['backend', 'eventDriven', 'data', 'frontend', 'tooling']) {
-      const label = (groupLabels as Record<string, unknown> | undefined)?.[group];
-      if (typeof label !== 'string' || label.trim().length === 0) {
-        errors.push(`Missing technology group label ${group} for locale: ${locale}`);
-      }
     }
     const afterHoursItems = page.afterHoursItems;
     if (
@@ -172,7 +123,7 @@ export function validateProject(project: Project): string[] {
         errors.push(`Missing project translation ${locale}: ${project.slug}`);
         continue;
       }
-      for (const field of ['name', 'summary', 'problem', 'solution', 'role'] as const) {
+      for (const field of ['name', 'summary'] as const) {
         if (typeof localized[field] !== 'string' || localized[field].trim() === '') {
           errors.push(`Missing project ${field} for ${locale}: ${project.slug}`);
         }
@@ -187,10 +138,11 @@ export function validateProject(project: Project): string[] {
   if (
     !Array.isArray(project.technologies) ||
     project.technologies.length < 3 ||
-    project.technologies.length > 7 ||
     project.technologies.some((technology) => typeof technology !== 'string' || !technology.trim())
   ) {
-    errors.push('Project technologies must contain between three and seven non-empty values.');
+    errors.push('Project technologies must contain at least three non-empty values.');
+  } else if (new Set(project.technologies).size !== project.technologies.length) {
+    errors.push('Project technologies must be unique.');
   }
 
   if (!project.repositoryUrl || !validateExternalUrl(project.repositoryUrl)) {
@@ -206,28 +158,19 @@ export function validateProject(project: Project): string[] {
       errors.push('Project repository URL must point to a GitHub repository.');
     }
   }
-  if (project.demoUrl) {
-    if (!validateExternalUrl(project.demoUrl)) errors.push('Project demo URL is invalid.');
-    if (project.demoUrlApproved !== true) errors.push('Project demo URL lacks owner approval.');
-  } else if (project.demoUrlApproved) {
-    errors.push('A demo URL approval requires a demo URL.');
-  }
   if (
     typeof project.asset !== 'string' ||
     !project.asset.startsWith('/assets/projects/') ||
-    !project.asset.endsWith('.svg')
+    !/\.(?:svg|webp)$/.test(project.asset)
   ) {
-    errors.push(`Project artwork must be a local SVG: ${project.slug}`);
-  }
-  if (project.publicationStatus !== 'published') {
-    errors.push(`Project must be marked published in the portfolio: ${project.slug}`);
+    errors.push(`Project artwork must be a local SVG or WebP: ${project.slug}`);
   }
   return errors;
 }
 
 export function validateProjectManifest(projects: readonly Project[]): string[] {
   const errors: string[] = [];
-  const expectedOrder = ['fraud-detection-platform', 'stockrescue-ai', 'chess-project'];
+  const expectedOrder = ['fraud-detection-platform', 'stockrescue-ai', 'chess-project', 'library'];
   if (!Array.isArray(projects) || projects.length !== expectedOrder.length) {
     return [`Project manifest must contain exactly ${expectedOrder.length} projects.`];
   }

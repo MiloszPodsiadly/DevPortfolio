@@ -3,12 +3,13 @@ import { projects } from './projects';
 import { validateProject, validateProjectManifest } from './profile';
 import type { Project } from './profile';
 
-describe('PF-003 project manifest', () => {
-  it('contains exactly three stable, bilingual projects in the approved order', () => {
+describe('project manifest', () => {
+  it('contains four stable, bilingual projects in the approved order', () => {
     expect(projects.map(({ slug }) => slug)).toEqual([
       'fraud-detection-platform',
       'stockrescue-ai',
       'chess-project',
+      'library',
     ]);
     expect(validateProjectManifest(projects)).toEqual([]);
     expect(JSON.stringify(projects)).not.toMatch(/hop\s*on/i);
@@ -17,23 +18,33 @@ describe('PF-003 project manifest', () => {
     }
   });
 
-  it('publishes verified repository URLs and no unapproved demos', () => {
+  it('publishes GitHub repository URLs', () => {
     expect(
       projects.every((project) => project.repositoryUrl.startsWith('https://github.com/')),
     ).toBe(true);
-    expect(projects.every((project) => !('demoUrl' in project))).toBe(true);
+  });
+
+  it('accepts the full stack and rejects blank or duplicate technology entries', () => {
+    expect(projects[0].technologies).toHaveLength(14);
+    expect(validateProject(projects[0])).toEqual([]);
+    expect(validateProject({ ...projects[0], technologies: ['Java', '', 'React'] })).toContain(
+      'Project technologies must contain at least three non-empty values.',
+    );
+    expect(validateProject({ ...projects[0], technologies: ['Java', 'Java', 'React'] })).toContain(
+      'Project technologies must be unique.',
+    );
   });
 
   it('rejects duplicate slugs and a manifest with a missing project', () => {
-    expect(validateProjectManifest([projects[0], projects[0], projects[2]])).toContain(
+    expect(validateProjectManifest([projects[0], projects[0], projects[2], projects[3]])).toContain(
       'Project slugs must be unique.',
     );
     expect(validateProjectManifest(projects.slice(0, 2))).toContain(
-      'Project manifest must contain exactly 3 projects.',
+      'Project manifest must contain exactly 4 projects.',
     );
   });
 
-  it('rejects incomplete translations and invalid repository or demo URLs', () => {
+  it('rejects incomplete translations and invalid repository URLs', () => {
     const incomplete = {
       ...projects[0],
       content: {
@@ -51,11 +62,5 @@ describe('PF-003 project manifest', () => {
     expect(validateProject({ ...projects[0], repositoryUrl: '' } as Project)).toContain(
       'Project repository URL is invalid.',
     );
-    expect(
-      validateProject({ ...projects[0], demoUrl: 'https://example.com' } as Project),
-    ).toContain('Project demo URL is invalid.');
-    expect(
-      validateProject({ ...projects[0], demoUrl: 'https://fraud-demo.app' } as Project),
-    ).toContain('Project demo URL lacks owner approval.');
   });
 });

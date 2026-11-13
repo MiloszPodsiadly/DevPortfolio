@@ -7,6 +7,10 @@ import tseslint from 'typescript-eslint';
 export default tseslint.config(
   {
     ignores: [
+      'assets-source/**',
+      'prompts/**',
+      '.ssr-build*/**',
+      '.vite/**',
       'dist/**',
       'coverage/**',
       'playwright-report/**',

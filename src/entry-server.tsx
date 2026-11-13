@@ -2,24 +2,33 @@ import { renderToString } from 'react-dom/server';
 import { App } from './app/App';
 import { validateLocaleContent, validateProjectManifest } from './content/profile';
 import { projects } from './content/projects';
-import { validateTechnologyGroups } from './content/skills';
+import { validateTechnologies } from './content/skills';
 import { validateSocialLinks } from './content/socials';
-import { getPageContent, pageContent, type Locale } from './locales';
-export { validateSiteOrigin } from './lib/site-url.mjs';
+import { pageContent, type Locale } from './locales';
+import {
+  getSeoMetadata,
+  renderPersonJsonLd,
+  renderSeoMetadata,
+  renderSocialMetadata,
+} from './lib/seo';
 
 const contentErrors = [
   ...validateLocaleContent(pageContent),
   ...validateProjectManifest(projects),
-  ...validateTechnologyGroups(),
+  ...validateTechnologies(),
   ...validateSocialLinks(),
 ];
 if (contentErrors.length > 0) {
   throw new Error(`Invalid locale content: ${contentErrors.join('; ')}`);
 }
 
-export function render(locale: Locale, portraitAvailable = false) {
+export function render(locale: Locale, portraitAvailable = false, siteUrl?: string) {
+  const seo = getSeoMetadata(locale);
   return {
     html: renderToString(<App locale={locale} portraitAvailable={portraitAvailable} />),
-    page: getPageContent(locale),
+    seo,
+    seoHtml: renderSeoMetadata(seo),
+    socialHtml: renderSocialMetadata(seo, locale, siteUrl),
+    structuredDataHtml: renderPersonJsonLd(locale, siteUrl),
   };
 }

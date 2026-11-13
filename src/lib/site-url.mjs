@@ -3,6 +3,11 @@ const placeholderHost =
 
 export function validateSiteOrigin(value) {
   if (value === undefined || value.trim() === '') return undefined;
+  if (value !== value.trim() || !/^https:\/\/[^/?#]+\/?$/i.test(value)) {
+    throw new Error(
+      'SITE_URL must be an absolute HTTPS origin without a path, query, or fragment.',
+    );
+  }
 
   let url;
   try {

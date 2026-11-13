@@ -1,46 +1,48 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { projects } from '../content/projects';
+import type { Project } from '../content/profile';
 import { ProjectCard } from './ProjectCard';
 
 const project = projects[0];
 
-function renderCard() {
+function renderCard(target: Project = project) {
   return render(
     <ProjectCard
-      project={project}
+      project={target}
       locale="en"
       repositoryLabel="Source code"
-      demoLabel="Live demo"
-      problemLabel="Problem space"
-      solutionLabel="Project approach"
-      roleLabel="Context"
       technologyListLabel="Project technologies"
     />,
   );
 }
 
 describe('ProjectCard', () => {
-  it('renders localized project detail, evidence-based technologies and local artwork', () => {
-    renderCard();
+  it.each(projects)('renders the new description and complete stack for $slug', (target) => {
+    renderCard(target);
 
     expect(
-      screen.getByRole('heading', { level: 3, name: 'Fraud Detection Platform' }),
+      screen.getByRole('heading', { level: 3, name: target.content.en.name }),
     ).toBeInTheDocument();
-    expect(screen.getByText(project.content.en.problem)).toBeInTheDocument();
-    expect(screen.getByText(project.content.en.solution)).toBeInTheDocument();
-    expect(screen.getByText('Apache Kafka')).toBeInTheDocument();
-    expect(screen.getByAltText('')).toHaveAttribute('src', '/assets/projects/fraud-signals.svg');
+    expect(screen.getByText(target.content.en.summary)).toBeInTheDocument();
+    const stack = screen.getByRole('list', {
+      name: `${target.content.en.name}: Project technologies`,
+    });
+    expect(
+      within(stack)
+        .getAllByRole('listitem')
+        .map((item) => item.textContent),
+    ).toEqual(target.technologies);
+    expect(document.querySelector('.project-card-art img')).toHaveAttribute('src', target.asset);
   });
 
-  it('shows the verified repository action and omits an unapproved demo', () => {
+  it('renders the repository action with safe external-link attributes', () => {
     renderCard();
 
     const source = screen.getByRole('link', { name: 'Source code — Fraud Detection Platform' });
     expect(source).toHaveAttribute('href', project.repositoryUrl);
     expect(source).toHaveAttribute('target', '_blank');
     expect(source).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(screen.queryByRole('link', { name: /Live demo/ })).not.toBeInTheDocument();
   });
 
   it('uses Polish copy when the Polish page is rendered', () => {
@@ -49,10 +51,6 @@ describe('ProjectCard', () => {
         project={project}
         locale="pl"
         repositoryLabel="Kod źródłowy"
-        demoLabel="Demo na żywo"
-        problemLabel="Obszar problemu"
-        solutionLabel="Podejście projektu"
-        roleLabel="Kontekst"
         technologyListLabel="Technologie projektu"
       />,
     );

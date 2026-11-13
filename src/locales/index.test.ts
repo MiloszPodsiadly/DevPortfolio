@@ -26,9 +26,9 @@ describe('locale contract', () => {
     expect(getPageContent('pl').role).toBe('Junior Software Developer');
     expect(getPageContent('en').aboutDescription).toMatch(/event-driven/);
     expect(getPageContent('pl').afterHoursItems.map((item) => item.id)).toEqual([
-      'chess',
-      'fantasy',
-      'gaming',
+      'games',
+      'science-fantasy',
+      'technology',
     ]);
     expect(
       validateLocaleContent({ en: pageContent.en, pl: { ...pageContent.pl, introduction: ' ' } }),
@@ -49,17 +49,18 @@ describe('future content links', () => {
     expect(validateExternalUrl('not a URL')).toBe(false);
   });
 
-  it('validates exactly three published projects with matching English and Polish slugs', () => {
+  it('validates four published projects with matching English and Polish slugs', () => {
     expect(projects.map((project) => project.slug)).toEqual([
       'fraud-detection-platform',
       'stockrescue-ai',
       'chess-project',
+      'library',
     ]);
     expect(validateProjectManifest(projects)).toEqual([]);
   });
 
   it('rejects a duplicate slug and a missing project translation', () => {
-    expect(validateProjectManifest([projects[0], projects[0], projects[2]])).toContain(
+    expect(validateProjectManifest([projects[0], projects[0], projects[2], projects[3]])).toContain(
       'Project slugs must be unique.',
     );
     const missingPolish = {
@@ -71,10 +72,7 @@ describe('future content links', () => {
     );
   });
 
-  it('rejects invalid demo URLs and excluded project copy', () => {
-    expect(validateProject({ ...projects[0], demoUrl: 'https://placeholder.example' })).toContain(
-      'Project demo URL is invalid.',
-    );
+  it('rejects excluded project copy', () => {
     const excludedCopy = {
       ...projects[0],
       content: {

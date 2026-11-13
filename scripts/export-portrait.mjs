@@ -1,9 +1,16 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 
 const root = resolve(import.meta.dirname, '..');
-const sourcePath = resolve(root, 'assets-source/portraits/hero-source.png');
+const cutoutPath = resolve(root, 'assets-source/portraits/hero-cutout-source.png');
+const sourcePath = await access(cutoutPath).then(
+  () => cutoutPath,
+  (error) => {
+    if (error.code === 'ENOENT') return resolve(root, 'assets-source/portraits/hero-source.png');
+    throw error;
+  },
+);
 const outputDirectory = resolve(root, 'public/assets/portraits');
 const widths = [480, 960];
 const quality = 0.86;
